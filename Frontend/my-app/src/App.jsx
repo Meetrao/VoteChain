@@ -1,11 +1,17 @@
-import React from "react";
-import FaceFromImage from "./FaceCapture";
+import React, { useState } from "react";
+import Register from "./Register";
+import Login from "./Login";
 
 function App() {
+  const [page, setPage] = useState("register");
+
   return (
     <div>
-      <h1>Face Embedding Test (Image)</h1>
-      <FaceFromImage />
+      <div style={{ margin: 20 }}>
+        <button onClick={() => setPage("register")}>Register</button>
+        <button onClick={() => setPage("login")}>Login</button>
+      </div>
+      {page === "register" ? <Register /> : <Login />}
     </div>
   );
 }

@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import FaceCaptureMulti from "./FaceCapture";
 
-export default function Register() {
+export default function Login() {
   const [showFace, setShowFace] = useState(false);
 
   return (
     <div style={{ padding: 40 }}>
-      <h2>Register</h2>
+      <h2>Login</h2>
       <button onClick={() => setShowFace(true)}>
-        Capture Face for Registration
+        Capture Face for Login
       </button>
       {showFace && (
         <FaceCaptureMulti
-          frameCount={5}
+          frameCount={3}
           interval={400}
         />
       )}

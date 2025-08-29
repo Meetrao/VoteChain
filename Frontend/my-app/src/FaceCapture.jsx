@@ -1,73 +1,85 @@
+// FaceCaptureMulti.jsx
 import React, { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
 
-export default function FaceCapture() {
+export default function FaceCaptureMulti({ frameCount = 5, interval = 400 }) {
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   const [ready, setReady] = useState(false);
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     async function init() {
-      // Load models
       await Promise.all([
         faceapi.nets.ssdMobilenetv1.loadFromUri("/models"),
         faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
         faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
       ]);
-
-      // Start webcam
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+      videoRef.current.srcObject = stream;
       setReady(true);
     }
-
     init();
+    // Cleanup: stop webcam on unmount
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, []);
 
-  // Capture face and log embedding
-  const captureFace = async () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const detection = await faceapi
-      .detectSingleFace(canvas)
+  const detectDescriptor = async () => {
+    if (!videoRef.current) return null;
+    const result = await faceapi
+      .detectSingleFace(videoRef.current)
       .withFaceLandmarks()
       .withFaceDescriptor();
+    if (!result) return null;
+    return Array.from(result.descriptor); // convert Float32Array -> normal Array
+  };
 
-    if (!detection) {
-      console.log("No face detected");
+  const averageVectors = (vecs) => {
+    if (!vecs.length) return null;
+    const len = vecs[0].length;
+    const avg = new Array(len).fill(0);
+    vecs.forEach((v) => {
+      for (let i = 0; i < len; i++) avg[i] += v[i];
+    });
+    for (let i = 0; i < len; i++) avg[i] /= vecs.length;
+    return avg;
+  };
+
+  // Multi-frame capture and log
+  const captureAndLog = async () => {
+    if (!ready) return;
+    setStatus("Capturing frames, stay still...");
+    const descriptors = [];
+    for (let i = 0; i < frameCount; i++) {
+      const d = await detectDescriptor();
+      if (d) descriptors.push(d);
+      else console.log("frame", i, "no face detected");
+      await sleep(interval);
+    }
+    if (!descriptors.length) {
+      setStatus("No face detected — try again.");
       return;
     }
-
-    console.log("Face embedding:", detection.descriptor); // 128-length Float32Array
+    const averaged = averageVectors(descriptors);
+    setStatus("Embedding captured! Check console.");
+    console.log("All embeddings:", descriptors);
+    console.log("Averaged embedding:", averaged);
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        style={{ border: "1px solid black", borderRadius: "8px" }}
-      />
-      <canvas ref={canvasRef} style={{ display: "none" }} />
-      <br />
-      <button
-        onClick={captureFace}
-        disabled={!ready}
-        style={{ padding: "8px 12px", marginTop: "10px", background: "black", color: "white", borderRadius: "4px" }}
-      >
-        {ready ? "Capture Face" : "Loading..."}
-      </button>
+    <div style={{ padding: 20 }}>
+      <video ref={videoRef} autoPlay muted playsInline style={{ width: 320, height: 240 }} />
+      <div style={{ marginTop: 10 }}>
+        <button onClick={captureAndLog} disabled={!ready}>
+          Capture Face Embedding
+        </button>
+      </div>
+      <div style={{ marginTop: 8 }}>{status}</div>
     </div>
   );
 }
