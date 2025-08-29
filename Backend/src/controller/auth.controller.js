@@ -1,35 +1,89 @@
 import bcrypt from "bcrypt";
 import User from "../model/user.model.js";
-import { compareFaceEmbeddings } from "../utils/otpUtils.js";
 import { sendOTP, verifyOTP } from "../utils/otpUtils.js";
 import jwtUtil from "../utils/jwt.js";
-import { NODE_ENV } from "../constants.js";
+import { euclideanDistance } from "../utils/face-api.js";
 
-//Face Authentication Controller
-export const faceLoginController = async (req, res) => {
+import { NODE_ENV } from "../constants.js";
+import { THRESHOLD } from "../constants.js";
+
+export const register = async (req, res) => {
   try {
-    const { voter_id, face_embedding } = req.body;
-    if (!voter_id || !face_embedding) {
-      return res.status(400).json({ message: "voter_id and face_embedding are required." });
+    const { name, email, password, voter_id, phone_number, face_embedding } = req.body;
+    if (!name || !email || !password || !voter_id || !phone_number || !face_embedding) {
+      return res.status(400).json({ message: "All fields are required, including face embedding." });
     }
-    const user = await User.findOne({ voter_id });
-    if (!user) {
-      return res.status(404).json({ message: "Voter ID not found." });
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ $or: [{ email }, { voter_id }, { phone_number }] });
+    if (existingUser) {
+      return res.status(409).json({ message: "User with this email, voter ID, or phone number already exists." });
     }
-    if (!user.face_embedding || !compareFaceEmbeddings(face_embedding, user.face_embedding)) {
-      return res.status(401).json({ message: "Face not recognized, try password login." });
-    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const user = new User({
+      name,
+      email,
+      voter_id,
+      phone_number,
+      password: hashedPassword,
+      face_embedding,
+    });
+    await user.save();
+
+    // Generate JWT token
     const token = jwtUtil.generateAccessToken({ id: user._id, voter_id: user.voter_id });
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: NODE_ENV === "production",
       sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-    const userInfo = await User.findById(user._id).select("-password -otp_logs");
-    return res.status(200).json({ message: "Login successful", user: userInfo });
+
+    const createdUser = await User.findById(user._id).select("-password");
+    return res.status(201).json({ message: "User registered successfully.", user: createdUser });
   } catch (error) {
-    res.status(500).json({ message: "Face login failed.", error: error.message });
+    res.status(500).json({ message: "Registration failed.", error: error.message });
+  }
+};
+
+export const faceLoginController = async (req, res) => {
+  try {
+    const { voter_id, face_embedding } = req.body;
+    if (!voter_id || !face_embedding) {
+      return res.status(400).json({ message: "Voter ID and Face embedding required" });
+    }
+
+    const existingUser = await User.findOne({ voter_id });
+    if (!existingUser) {
+      return res.status(404).json({ message: "Voter ID not found" });
+    }
+
+    const storedEmbedding = existingUser.face_embedding;
+    const distance = euclideanDistance(face_embedding, storedEmbedding);
+    console.log("Face distance:", distance);
+
+    if (distance <= THRESHOLD) {
+      const token = jwtUtil.generateAccessToken({ id: existingUser._id, voter_id: existingUser.voter_id });
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: NODE_ENV === "production",
+        sameSite: "Strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.json({ message: "Login successful", user: { id: existingUser._id, voter_id: existingUser.voter_id } });
+    } else {
+      return res.status(401).json({ message: "Face does not match. Try again." });
+    }
+
+  } catch (error) {
+    res.status(500).json({ message: "Login failed.", error: error.message });
   }
 };
 
@@ -126,47 +180,3 @@ export const verifyOTPLogin = async (req, res) => {
     res.status(500).json({ message: "OTP verification failed.", error: error.message });
   }
 }
-
-export const register = async (req, res) => {
-  try {
-    const { name, email, password, voter_id, phone_number, face_embedding } = req.body;
-    if (!name || !email || !password || !voter_id || !phone_number || !face_embedding) {
-      return res.status(400).json({ message: "All fields are required, including face embedding." });
-    }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ $or: [{ email }, { voter_id }, { phone_number }] });
-    if (existingUser) {
-      return res.status(409).json({ message: "User with this email, voter ID, or phone number already exists." });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = new User({
-      name,
-      email,
-      voter_id,
-      phone_number,
-      password: hashedPassword,
-      face_embedding,
-    });
-    await user.save();
-
-    // Generate JWT token
-    const token = jwtUtil.generateAccessToken({ id: user._id, voter_id: user.voter_id });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    const createdUser = await User.findById(user._id).select("-password");
-    return res.status(201).json({ message: "User registered successfully.", user: createdUser });
-  } catch (error) {
-    res.status(500).json({ message: "Registration failed.", error: error.message });
-  }
-};

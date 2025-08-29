@@ -11,8 +11,8 @@ const userSchema = new mongoose.Schema({
     unique: true,
   },
   password: {
-    type: Number,
-    required : true
+    type: String,
+    required: true
   },
   voter_id: {
     type: String,
@@ -27,10 +27,6 @@ const userSchema = new mongoose.Schema({
   face_embedding: {
     type: [Number],
     required: true,
-  },
-  otp_logs: {
-    type: String,
-    required: false,
   }
 }, {
   timestamps: true
