@@ -11,3 +11,6 @@ export const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
 export const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
 export const TWILIO_SERVICE_SID = process.env.TWILIO_SERVICE_SID
 export const THRESHOLD = Number(process.env.THRESHOLD)
+export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY
+export const CLOUDINARY_API_SECERT = process.env.CLOUDINARY_API_SECERT

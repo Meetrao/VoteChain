@@ -3,7 +3,6 @@ import { MONGO_URI } from "../constants.js";
 
 const connectDB = async () => {
   try {
-    console.log("MONGO_URI:", MONGO_URI); // Debug line
     await mongoose.connect(MONGO_URI);
     console.log('MongoDB connected');
   } catch (err) {
