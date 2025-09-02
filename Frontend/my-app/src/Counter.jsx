@@ -53,7 +53,7 @@ const CounterComponent = () => {
       <button onClick={connectWallet}>Connect Wallet</button>
       <button onClick={increment}>Increment</button>
       <button onClick={decrement}>Decrement</button>
-      <button onClick={getNumber}>Get Number</button>
+      <button onClick={getNumber}>Get Count</button>
     </div>
   );
 };
