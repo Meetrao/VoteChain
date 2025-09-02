@@ -1,0 +1,1 @@
+export const COUNTER_ADDRESS = import.meta.env.VITE_COUNTER_ADDRESS;
