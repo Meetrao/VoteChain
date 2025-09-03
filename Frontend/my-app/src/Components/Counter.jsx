@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
-import { CounterABI } from "./contracts/CouterABI.js";
-import { COUNTER_ADDRESS } from "./constants.js";
+import { CounterABI } from "../contracts/CouterABI.js";
+import { COUNTER_ADDRESS } from "../constants.js";
 
 const CounterComponent = () => {
   const [count, setCount] = useState(null);

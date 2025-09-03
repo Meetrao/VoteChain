@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
 
-export default function FaceCaptureMulti({ frameCount = 5, interval = 400 }) {
+export default function FaceCaptureMulti({ frameCount = 5, interval = 400, onCaptureComplete }) {
   const videoRef = useRef(null);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState("");
@@ -66,9 +66,15 @@ export default function FaceCaptureMulti({ frameCount = 5, interval = 400 }) {
       return;
     }
     const averaged = averageVectors(descriptors);
-    setStatus("Embedding captured! Check console.");
+    setStatus("Embedding captured!");
+
     console.log("All embeddings:", descriptors);
     console.log("Averaged embedding:", averaged);
+
+    // ✅ Send averaged embedding to parent
+    if (onCaptureComplete) {
+      onCaptureComplete(averaged);
+    }
   };
 
   return (

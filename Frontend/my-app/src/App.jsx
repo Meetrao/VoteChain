@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import CounterComponent from "./Counter";
+import Register from "./Components/Register";
 
 function App() {
 
 
   return (
     <div>
-      <CounterComponent />
+      <Register />
     </div>
   );
 }
