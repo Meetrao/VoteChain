@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
   face_embedding: {
     type: [Number],
     required: true,
+  },
+  userWalletAddress: {
+    type: String,
+    required: true
   }
 }, {
   timestamps: true

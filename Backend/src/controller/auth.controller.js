@@ -9,9 +9,9 @@ import { THRESHOLD } from "../constants.js";
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, voter_id, phone_number, face_embedding } = req.body;
-    if (!name || !email || !password || !voter_id || !phone_number || !face_embedding) {
-      return res.status(400).json({ message: "All fields are required, including face embedding." });
+    const { name, email, password, voter_id, phone_number, face_embedding, userWalletAddress } = req.body;
+    if (!name || !email || !password || !voter_id || !phone_number || !face_embedding || !userWalletAddress) {
+      return res.status(400).json({ message: "All fields are required, including face embedding and wallet address." });
     }
 
     // Check if user already exists
@@ -31,6 +31,7 @@ export const register = async (req, res) => {
       phone_number,
       password: hashedPassword,
       face_embedding,
+      userWalletAddress, // <-- Store wallet address
     });
     await user.save();
 
