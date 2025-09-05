@@ -1,3 +1,4 @@
 {
-  "CounterModule#Counter": "0x7E9e6294Ac71CAa3Fe73206A919347B8f1Aa1a25"
+  "CounterModule#Counter": "0x7E9e6294Ac71CAa3Fe73206A919347B8f1Aa1a25",
+  "VotingModule#Voting": "0x2D7B1fa44FdB8785d5402384177FE82CDDcb9136"
 }
