@@ -1,0 +1,150 @@
+{
+  "_format": "hh3-artifact-1",
+  "contractName": "Voting",
+  "sourceName": "contracts/Voting.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "initialOwner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "voter",
+          "type": "address"
+        }
+      ],
+      "name": "checkWhitelist",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "isWhiteListed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "voter",
+          "type": "address"
+        }
+      ],
+      "name": "whiteListVoter",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600e575f5ffd5b506040516103bb3803806103bb833981016040819052602b9160b4565b806001600160a01b038116605857604051631e4fbdf760e01b81525f600482015260240160405180910390fd5b605f816065565b505060df565b5f80546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b5f6020828403121560c3575f5ffd5b81516001600160a01b038116811460d8575f5ffd5b9392505050565b6102cf806100ec5f395ff3fe608060405234801561000f575f5ffd5b5060043610610060575f3560e01c80631950c218146100645780636f9170f6146100a4578063715018a6146100c65780638da5cb5b146100d0578063ae4d8563146100ea578063f2fde38b146100fd575b5f5ffd5b61008f61007236600461026c565b6001600160a01b03165f9081526001602052604090205460ff1690565b60405190151581526020015b60405180910390f35b61008f6100b236600461026c565b60016020525f908152604090205460ff1681565b6100ce610110565b005b5f546040516001600160a01b03909116815260200161009b565b6100ce6100f836600461026c565b610123565b6100ce61010b36600461026c565b6101b4565b6101186101f1565b6101215f61021d565b565b61012b6101f1565b6001600160a01b0381165f9081526001602052604090205460ff161561018e5760405162461bcd60e51b8152602060048201526013602482015272105b1c9958591e481dda1a5d195b1a5cdd1959606a1b60448201526064015b60405180910390fd5b6001600160a01b03165f908152600160208190526040909120805460ff19169091179055565b6101bc6101f1565b6001600160a01b0381166101e557604051631e4fbdf760e01b81525f6004820152602401610185565b6101ee8161021d565b50565b5f546001600160a01b031633146101215760405163118cdaa760e01b8152336004820152602401610185565b5f80546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b5f6020828403121561027c575f5ffd5b81356001600160a01b0381168114610292575f5ffd5b939250505056fea26469706673582212204266472e37099f11f7441216bf4900e0a0a844765fd7ed8122822a2b9452a7de64736f6c634300081c0033",
+  "deployedBytecode": "0x608060405234801561000f575f5ffd5b5060043610610060575f3560e01c80631950c218146100645780636f9170f6146100a4578063715018a6146100c65780638da5cb5b146100d0578063ae4d8563146100ea578063f2fde38b146100fd575b5f5ffd5b61008f61007236600461026c565b6001600160a01b03165f9081526001602052604090205460ff1690565b60405190151581526020015b60405180910390f35b61008f6100b236600461026c565b60016020525f908152604090205460ff1681565b6100ce610110565b005b5f546040516001600160a01b03909116815260200161009b565b6100ce6100f836600461026c565b610123565b6100ce61010b36600461026c565b6101b4565b6101186101f1565b6101215f61021d565b565b61012b6101f1565b6001600160a01b0381165f9081526001602052604090205460ff161561018e5760405162461bcd60e51b8152602060048201526013602482015272105b1c9958591e481dda1a5d195b1a5cdd1959606a1b60448201526064015b60405180910390fd5b6001600160a01b03165f908152600160208190526040909120805460ff19169091179055565b6101bc6101f1565b6001600160a01b0381166101e557604051631e4fbdf760e01b81525f6004820152602401610185565b6101ee8161021d565b50565b5f546001600160a01b031633146101215760405163118cdaa760e01b8152336004820152602401610185565b5f80546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b5f6020828403121561027c575f5ffd5b81356001600160a01b0381168114610292575f5ffd5b939250505056fea26469706673582212204266472e37099f11f7441216bf4900e0a0a844765fd7ed8122822a2b9452a7de64736f6c634300081c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "immutableReferences": {},
+  "inputSourceName": "project/contracts/Voting.sol",
+  "buildInfoId": "solc-0_8_28-6731651afe47086fb3c9cee8fa93dcaac350412b"
+}
