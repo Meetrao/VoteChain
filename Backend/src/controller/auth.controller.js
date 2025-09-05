@@ -3,6 +3,8 @@ import User from "../model/user.model.js";
 import { sendOTP, verifyOTP } from "../utils/otpUtils.js";
 import jwtUtil from "../utils/jwt.js";
 import { euclideanDistance } from "../utils/face-api.js";
+import blockchain from "../utils/blockchain.js";
+import { ethers } from "ethers";
 
 import { NODE_ENV } from "../constants.js";
 import { THRESHOLD } from "../constants.js";
@@ -45,8 +47,20 @@ export const register = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
+    const tx = await blockchain.whiteListVoter(userWalletAddress);
+    const receipt = await tx.wait();
+
+    if (receipt.status !== 1) {
+      return res.status(500).json({ message: "Voter could not be whitelisted on-chain." });
+    }
+
     const createdUser = await User.findById(user._id).select("-password");
-    return res.status(201).json({ message: "User registered successfully.", user: createdUser });
+    return res.status(201).json({
+      message: "User registered successfully.",
+      user: createdUser,
+      txHash: receipt.transactionHash
+    });
+
   } catch (error) {
     res.status(500).json({ message: "Registration failed.", error: error.message });
   }
@@ -56,20 +70,40 @@ export const faceLoginController = async (req, res) => {
   try {
     const { voter_id, face_embedding } = req.body;
     if (!voter_id || !face_embedding) {
-      return res.status(400).json({ message: "Voter ID and Face embedding required" });
+      return res.status(400).json({ ok: false, message: "Voter ID and Face embedding required" });
     }
 
     const existingUser = await User.findOne({ voter_id });
     if (!existingUser) {
-      return res.status(404).json({ message: "Voter ID not found" });
+      return res.status(404).json({ ok: false, message: "Voter ID not found" });
     }
 
     const storedEmbedding = existingUser.face_embedding;
+    if (
+      !Array.isArray(face_embedding) ||
+      !Array.isArray(storedEmbedding) ||
+      face_embedding.length !== storedEmbedding.length
+    ) {
+      return res.status(400).json({ ok: false, message: "Invalid face embedding data." });
+    }
+
     const distance = euclideanDistance(face_embedding, storedEmbedding);
     console.log("Face distance:", distance);
 
     if (distance <= THRESHOLD) {
       const token = jwtUtil.generateAccessToken({ id: existingUser._id, voter_id: existingUser.voter_id });
+
+      let isWhitelisted = false;
+      try {
+        isWhitelisted = await blockchain.checkWhitelist(existingUser.userWalletAddress);
+      } catch (bcErr) {
+        console.error("Blockchain checkWhitelist error:", bcErr);
+        return res.status(500).json({ ok: false, message: "Blockchain check failed." });
+      }
+
+      if (!isWhitelisted) {
+        return res.status(403).json({ ok: false, message: "Wallet not whitelisted for voting" });
+      }
 
       res.cookie("token", token, {
         httpOnly: true,
@@ -78,13 +112,20 @@ export const faceLoginController = async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.json({ message: "Login successful", user: { id: existingUser._id, voter_id: existingUser.voter_id } });
+      // Return user info (excluding sensitive fields)
+      const userInfo = await User.findById(existingUser._id).select("-password");
+      return res.json({
+        ok: true,
+        message: "Login successful",
+        user: userInfo,
+      });
     } else {
-      return res.status(401).json({ message: "Face does not match. Try again." });
+      return res.status(401).json({ ok: false, message: "Face does not match. Try again." });
     }
 
   } catch (error) {
-    res.status(500).json({ message: "Login failed.", error: error.message });
+    console.error("Face login error:", error);
+    res.status(500).json({ ok: false, message: "Login failed." });
   }
 };
 
@@ -93,19 +134,31 @@ export const passwordLogin = async (req, res) => {
     const { voter_id, password } = req.body;
 
     if (!voter_id || !password) {
-      return res.status(400).json({ message: "voter_id and password are required." });
+      return res.status(400).json({ ok: false, message: "voter_id and password are required." });
     }
 
     // Find user by voter_id
     const user = await User.findOne({ voter_id });
     if (!user) {
-      return res.status(404).json({ message: "Voter ID not found" });
+      return res.status(404).json({ ok: false, message: "Voter ID not found" });
     }
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ ok: false, message: "Invalid credentials" });
+    }
+
+    // Check if wallet is whitelisted
+    let isWhitelisted = false;
+    try {
+      isWhitelisted = await blockchain.checkWhitelist(user.userWalletAddress);
+    } catch (bcErr) {
+      console.error("Blockchain checkWhitelist error:", bcErr);
+      return res.status(500).json({ ok: false, message: "Blockchain check failed." });
+    }
+    if (!isWhitelisted) {
+      return res.status(403).json({ ok: false, message: "Wallet not whitelisted for voting" });
     }
 
     // Generate JWT token and set cookie
@@ -119,9 +172,10 @@ export const passwordLogin = async (req, res) => {
 
     // Return user info (excluding password)
     const userInfo = await User.findById(user._id).select("-password");
-    return res.status(200).json({ message: "Login successful", user: userInfo });
+    return res.status(200).json({ ok: true, message: "Login successful", user: userInfo });
   } catch (error) {
-    res.status(500).json({ message: "Login failed.", error: error.message });
+    console.error("Password login error:", error);
+    res.status(500).json({ ok: false, message: "Login failed." });
   }
 };
 
@@ -153,17 +207,29 @@ export const verifyOTPLogin = async (req, res) => {
   try {
     const { voter_id, otp } = req.body;
     if (!voter_id || !otp) {
-      return res.status(400).json({ message: "Voter ID and OTP are required" });
+      return res.status(400).json({ ok: false, message: "Voter ID and OTP are required" });
     }
 
     const user = await User.findOne({ voter_id });
     if (!user) {
-      return res.status(404).json({ message: "Voter ID not found." });
+      return res.status(404).json({ ok: false, message: "Voter ID not found." });
     }
 
     const otpResult = await verifyOTP({ phone_number: user.phone_number, otp });
     if (!otpResult.success) {
-      return res.status(401).json({ message: "Invalid or expired OTP." });
+      return res.status(401).json({ ok: false, message: "Invalid or expired OTP." });
+    }
+
+    // Check if wallet is whitelisted
+    let isWhitelisted = false;
+    try {
+      isWhitelisted = await blockchain.checkWhitelist(user.userWalletAddress);
+    } catch (bcErr) {
+      console.error("Blockchain checkWhitelist error:", bcErr);
+      return res.status(500).json({ ok: false, message: "Blockchain check failed." });
+    }
+    if (!isWhitelisted) {
+      return res.status(403).json({ ok: false, message: "Wallet not whitelisted for voting" });
     }
 
     const token = jwtUtil.generateAccessToken({ id: user._id, voter_id: user.voter_id });
@@ -175,12 +241,13 @@ export const verifyOTPLogin = async (req, res) => {
     });
 
     const userInfo = await User.findById(user._id).select("-password");
-    return res.status(200).json({ message: "Login successful", user: userInfo });
+    return res.status(200).json({ ok: true, message: "Login successful", user: userInfo });
 
   } catch (error) {
-    res.status(500).json({ message: "OTP verification failed.", error: error.message });
+    console.error("OTP verification error:", error);
+    res.status(500).json({ ok: false, message: "OTP verification failed." });
   }
-}
+};
 
 export const logout = (req, res) => {
   try {
@@ -197,4 +264,4 @@ export const logout = (req, res) => {
       error: error
     })
   }
-}
+};

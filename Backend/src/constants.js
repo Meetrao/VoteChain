@@ -14,3 +14,6 @@ export const THRESHOLD = Number(process.env.THRESHOLD)
 export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME
 export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY
 export const CLOUDINARY_API_SECERT = process.env.CLOUDINARY_API_SECERT
+export const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL
+export const SEPOLIA_PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY
+export const VITE_VOTING_CONTRACT_ADDRESS = process.env.VITE_VOTING_CONTRACT_ADDRESS
