@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import Register from "./Components/Register";
+import Login from "./Components/Login"
+import Register from "./Components/Register"
 
 function App() {
 
 
   return (
     <div>
-      <Register />
+      <Login />
     </div>
   );
 }
