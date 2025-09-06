@@ -16,6 +16,10 @@ const candidateSchema = new mongoose.Schema({
   logo: {
     type: String,
     required: false
+  },
+  candidateWalletAddress: {
+    type: String,
+    required: true
   }
 }, {
   timestamps: true
