@@ -1,5 +1,5 @@
 import Candidate from "../model/candidate.model.js";
-import Voting from "../model/Voting.model.js";
+import Voting from "../model/voting.model.js";
 import uploadFile from "../utils/cloudinary.js";
 import blockchain from "../utils/blockchain.js";
 

@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import FaceCaptureMulti from "./FaceCapture";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [method, setMethod] = useState("password"); // password | face | otp | otp-verify
   const [form, setForm] = useState({
     voter_id: "",
@@ -60,6 +62,20 @@ export default function Login() {
 
       setMessage("✅ " + data.message);
       console.log("Logged in user:", data.user);
+
+      // Store user data in localStorage for admin check
+      localStorage.setItem("currentUser", JSON.stringify(data.user));
+
+      // Check if user is admin and redirect accordingly
+      const isAdmin = data.user.userWalletAddress === "0x2e6B08165B256Ed35fc7bA9De8998c2A06D4C936";
+
+      setTimeout(() => {
+        if (isAdmin) {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+      }, 1500);
     } catch (error) {
       setMessage("❌ " + error.message);
     } finally {
@@ -94,6 +110,22 @@ export default function Login() {
 
   return (
     <div style={{ padding: 40 }}>
+      <div style={{ marginBottom: 20 }}>
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "#6b7280",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer"
+          }}
+        >
+          ← Back to Home
+        </button>
+      </div>
       <h2>Login</h2>
 
       {/* Method Switcher */}

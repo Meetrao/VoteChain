@@ -1,9 +1,11 @@
 import React from "react";
 import { ethers } from "ethers";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import FaceCaptureMulti from "./FaceCapture";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [faceEmbedding, setFaceEmbedding] = useState(null);
   const [showFace, setShowFace] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,11 +66,18 @@ export default function Register() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          face_embedding: faceEmbedding, 
+          face_embedding: faceEmbedding,
         }),
       })
       const data = await res.json();
       setResult(data);
+
+      // Redirect to public page after successful registration
+      if (res.ok) {
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      }
     } catch (error) {
       setResult({ ok: false, message: error.message });
     } finally {
@@ -78,6 +87,23 @@ export default function Register() {
 
   return (
     <>
+      <div style={{ padding: 20 }}>
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "#6b7280",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            marginBottom: "20px"
+          }}
+        >
+          ← Back to Home
+        </button>
+      </div>
       <h2>Register</h2>
 
       <button onClick={connectWallet}>
