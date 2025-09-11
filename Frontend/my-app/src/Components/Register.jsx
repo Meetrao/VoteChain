@@ -3,6 +3,8 @@ import { ethers } from "ethers";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FaceCaptureMulti from "./FaceCapture";
+import axios from "axios";
+import { ADMIN_WALLET } from "../constants";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ export default function Register() {
       setForm((prev) => ({ ...prev, userWalletAddress: address }));
     } catch (error) {
       console.error("wallet not connected, error: ", error);
-      alert("waller connection failed");
+      alert("wallet connection failed");
     }
   };
 
@@ -61,25 +63,32 @@ export default function Register() {
     setResult(null);
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/register', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          face_embedding: faceEmbedding,
-        }),
-      })
-      const data = await res.json();
-      setResult(data);
+      // 🔧 FIX: Full URL with port 5000
+      const res = await axios.post('http://localhost:5000/api/auth/register', {
+        ...form,
+        face_embedding: faceEmbedding,
+      });
+      setResult(res.data);
 
-      // Redirect to public page after successful registration
-      if (res.ok) {
+      if (res.data.ok) {
+        // Admin check (case-insensitive, trimmed)
+        const isAdmin =
+          (res.data.user?.userWalletAddress || "").toLowerCase().trim() ===
+          (ADMIN_WALLET || "").toLowerCase().trim();
+
         setTimeout(() => {
-          navigate("/");
-        }, 2000);
+          if (isAdmin) {
+            navigate("/admin");
+          } else {
+            navigate("/VotingDashboard");
+          }
+        }, 1000);
       }
     } catch (error) {
-      setResult({ ok: false, message: error.message });
+      setResult({
+        ok: false,
+        message: error.response?.data?.message || error.message
+      });
     } finally {
       setLoading(false);
     }
@@ -150,7 +159,16 @@ export default function Register() {
           value={form.phone_number}
           onChange={handleChange}
           required
-        />
+        /><br />
+
+        <input
+          name="userWalletAddress"
+          type="text"
+          placeholder="Wallet Address"
+          value={form.userWalletAddress}
+          readOnly
+          style={{ backgroundColor: "#f3f4f6" }}
+        /><br />
 
         <div style={{ padding: 40 }}>
           <button type="button" onClick={(e) => { setShowFace(true) }}>

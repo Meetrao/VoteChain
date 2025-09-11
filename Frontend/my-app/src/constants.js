@@ -1,1 +1,1 @@
-export const COUNTER_ADDRESS = import.meta.env.VITE_COUNTER_ADDRESS;
+export const ADMIN_WALLET = import.meta.env.VITE_ADMIN_WALLET;

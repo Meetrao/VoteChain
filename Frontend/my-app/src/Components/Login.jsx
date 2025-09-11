@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FaceCaptureMulti from "./FaceCapture";
+import axios from "axios";
+import { ADMIN_WALLET } from "../constants.JS";
+
+// Optionally set baseURL globally
+axios.defaults.baseURL = "/api";
+axios.defaults.withCredentials = true;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -30,54 +36,51 @@ export default function Login() {
       let res;
 
       if (method === "password") {
-        res = await fetch("http://localhost:5000/api/auth/login/password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ voter_id: form.voter_id, password: form.password }),
-          credentials: "include",
+        res = await axios.post("/auth/login/password", {
+          voter_id: form.voter_id,
+          password: form.password,
         });
-      } else if (method === "face") {
+      }
+      else if (method === "face") {
         if (!faceEmbedding) {
           setMessage("❌ Please capture your face before logging in.");
           setLoading(false);
           return;
         }
-        res = await fetch("http://localhost:5000/api/auth/login/face", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ voter_id: form.voter_id, face_embedding: faceEmbedding }),
-          credentials: "include",
+        res = await axios.post("/auth/login/face", {
+          voter_id: form.voter_id,
+          face_embedding: faceEmbedding, // Correct key for backend
         });
-      } else if (method === "otp-verify") {
-        res = await fetch("http://localhost:5000/api/auth/login/otp/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ voter_id: form.voter_id, otp: form.otp }),
-          credentials: "include",
+      }
+      else if (method === "otp-verify") {
+        res = await axios.post("/auth/login/otp/verify", {
+          voter_id: form.voter_id,
+          otp: form.otp,
         });
       }
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
+      const data = res.data;
 
       setMessage("✅ " + data.message);
       console.log("Logged in user:", data.user);
 
-      // Store user data in localStorage for admin check
       localStorage.setItem("currentUser", JSON.stringify(data.user));
 
       // Check if user is admin and redirect accordingly
-      const isAdmin = data.user.userWalletAddress === "0x2e6B08165B256Ed35fc7bA9De8998c2A06D4C936";
+      console.log(data.user.userWalletAddress)
+      console.log(ADMIN_WALLET)
+      const isAdmin =
+        data.user.userWalletAddress?.toLowerCase() === ADMIN_WALLET?.toLowerCase();
 
       setTimeout(() => {
         if (isAdmin) {
           navigate("/admin");
         } else {
-          navigate("/");
+          navigate("/VotingDashboard");
         }
       }, 1500);
     } catch (error) {
-      setMessage("❌ " + error.message);
+      setMessage("❌ " + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
@@ -87,17 +90,13 @@ export default function Login() {
   const handleRequestOTP = async () => {
     try {
       setMessage("Sending OTP...");
-      const res = await fetch("http://localhost:5000/api/auth/login/otp/request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ voter_id: form.voter_id }),
+      const res = await axios.post("/auth/login/otp/request", {
+        voter_id: form.voter_id,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
       setMessage("📲 OTP sent to your registered phone");
       setMethod("otp-verify"); // switch to OTP verification step
     } catch (error) {
-      setMessage("❌ " + error.message);
+      setMessage("❌ " + (error.response?.data?.message || error.message));
     }
   };
 
@@ -120,7 +119,7 @@ export default function Login() {
             color: "white",
             border: "none",
             borderRadius: "6px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           ← Back to Home
@@ -130,9 +129,15 @@ export default function Login() {
 
       {/* Method Switcher */}
       <div style={{ marginBottom: 20 }}>
-        <button type="button" onClick={() => setMethod("password")}>Password</button>
-        <button type="button" onClick={() => setMethod("face")}>Face</button>
-        <button type="button" onClick={() => setMethod("otp")}>OTP</button>
+        <button type="button" onClick={() => setMethod("password")}>
+          Password
+        </button>
+        <button type="button" onClick={() => setMethod("face")}>
+          Face
+        </button>
+        <button type="button" onClick={() => setMethod("otp")}>
+          OTP
+        </button>
       </div>
 
       <form onSubmit={handleSubmit}>

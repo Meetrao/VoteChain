@@ -6,9 +6,23 @@ const CandidateRegister = () => {
   const [formData, setFormData] = useState({
     name: "",
     party: "",
-    slogan: "",
-    candidateWalletAddress: ""
+    slogan: ""
   });
+  const [walletAddress, setWalletAddress] = useState("");
+  // Connect to MetaMask and get wallet address
+  const connectWallet = async () => {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        setWalletAddress(accounts[0]);
+        setMessage("✅ Wallet connected: " + accounts[0]);
+      } catch (err) {
+        setMessage("❌ Wallet connection failed: " + err.message);
+      }
+    } else {
+      setMessage("❌ MetaMask not detected. Please install MetaMask.");
+    }
+  };
   const [logo, setLogo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -28,8 +42,8 @@ const CandidateRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.party || !formData.slogan || !formData.candidateWalletAddress || !logo) {
-      setMessage("❌ Please fill all fields and upload a logo");
+    if (!formData.name || !formData.party || !formData.slogan || !walletAddress || !logo) {
+      setMessage("❌ Please fill all fields, connect wallet, and upload a logo");
       return;
     }
 
@@ -41,7 +55,7 @@ const CandidateRegister = () => {
       formDataToSend.append("name", formData.name);
       formDataToSend.append("party", formData.party);
       formDataToSend.append("slogan", formData.slogan);
-      formDataToSend.append("candidateWalletAddress", formData.candidateWalletAddress);
+      formDataToSend.append("candidateWalletAddress", walletAddress);
       formDataToSend.append("logo", logo);
 
       const response = await fetch("http://localhost:5000/api/candidate/register", {
@@ -58,9 +72,9 @@ const CandidateRegister = () => {
         setFormData({
           name: "",
           party: "",
-          slogan: "",
-          candidateWalletAddress: ""
+          slogan: ""
         });
+        setWalletAddress("");
         setLogo(null);
         // Redirect to public page after 2 seconds
         setTimeout(() => {
@@ -151,15 +165,19 @@ const CandidateRegister = () => {
 
           <div style={fieldStyle}>
             <label style={labelStyle}>Wallet Address *</label>
-            <input
-              type="text"
-              name="candidateWalletAddress"
-              value={formData.candidateWalletAddress}
-              onChange={handleInputChange}
-              placeholder="0x..."
-              style={inputStyle}
-              required
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <input
+                type="text"
+                value={walletAddress}
+                readOnly
+                placeholder="Connect your wallet"
+                style={{ ...inputStyle, backgroundColor: '#f3f4f6', color: '#374151', flex: 1 }}
+                required
+              />
+              <button type="button" onClick={connectWallet} style={{ padding: '8px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
+                {walletAddress ? 'Connected' : 'Connect Wallet'}
+              </button>
+            </div>
             <small style={{ color: "#6b7280", fontSize: "12px" }}>
               Your Ethereum wallet address for blockchain registration
             </small>
