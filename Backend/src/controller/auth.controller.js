@@ -37,8 +37,12 @@ export const register = async (req, res) => {
     });
     await user.save();
 
-    // Generate JWT token
-    const token = jwtUtil.generateAccessToken({ id: user._id, voter_id: user.voter_id });
+    // Generate JWT token - ADD userWalletAddress
+    const token = jwtUtil.generateAccessToken({ 
+      id: user._id, 
+      voter_id: user.voter_id,
+      userWalletAddress: user.userWalletAddress // ADD THIS LINE
+    });
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -91,7 +95,11 @@ export const faceLoginController = async (req, res) => {
     console.log("Face distance:", distance);
 
     if (distance <= THRESHOLD) {
-      const token = jwtUtil.generateAccessToken({ id: existingUser._id, voter_id: existingUser.voter_id });
+      const token = jwtUtil.generateAccessToken({ 
+        id: existingUser._id, 
+        voter_id: existingUser.voter_id,
+        userWalletAddress: existingUser.userWalletAddress // ADD THIS LINE
+      });
 
       let isWhitelisted = false;
       try {
@@ -161,8 +169,12 @@ export const passwordLogin = async (req, res) => {
       return res.status(403).json({ ok: false, message: "Wallet not whitelisted for voting" });
     }
 
-    // Generate JWT token and set cookie
-    const token = jwtUtil.generateAccessToken({ id: user._id, voter_id: user.voter_id });
+    // Generate JWT token and set cookie - ADD userWalletAddress
+    const token = jwtUtil.generateAccessToken({ 
+      id: user._id, 
+      voter_id: user.voter_id,
+      userWalletAddress: user.userWalletAddress // ADD THIS LINE
+    });
     res.cookie("token", token, {
       httpOnly: true,
       secure: NODE_ENV === "production",
@@ -232,7 +244,11 @@ export const verifyOTPLogin = async (req, res) => {
       return res.status(403).json({ ok: false, message: "Wallet not whitelisted for voting" });
     }
 
-    const token = jwtUtil.generateAccessToken({ id: user._id, voter_id: user.voter_id });
+    const token = jwtUtil.generateAccessToken({ 
+      id: user._id, 
+      voter_id: user.voter_id,
+      userWalletAddress: user.userWalletAddress // ADD THIS LINE
+    });
     res.cookie("token", token, {
       httpOnly: true,
       secure: NODE_ENV === "production",

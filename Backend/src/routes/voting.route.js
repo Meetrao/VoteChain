@@ -1,32 +1,36 @@
 import express from "express";
+import { onlyAdmin } from "../middleware/admin.middleware.js";
+import authMiddleware from "../middleware/jwt.middleware.js";
 import {
   createVoting,
-  getCurrentElection,
+  getElection,
   startVotingPhase,
-  endVotingPhase,
-  updateElectionPhase,
-  deleteElection
+  startResultPhase,
+  endElection,
+  castVote,
+  getResults,
+  listPastElectionsWithWinners,
+  listAllElections,
+  checkBlockchainStatus,
+  endBlockchainElection,
+  debugUser,
+  debugBlockchainVotes
 } from "../controller/voting.controller.js";
 
 const router = express.Router();
 
-// Create a new voting session (registration phase)
-router.post("/create", createVoting);
-
-// Get current voting status and candidates
-router.get("/active", getCurrentElection);
-router.get("/current", getCurrentElection); // Alias for admin dashboard
-
-// Manually move to voting phase
-router.post("/start", startVotingPhase);
-
-// Manually move to result phase
-router.post("/end", endVotingPhase);
-
-// Update election phase (for admin dashboard)
-router.put("/:id/phase", updateElectionPhase);
-
-// Delete election and all associated candidates
-router.delete("/:id", deleteElection);
+router.post("/create", onlyAdmin, createVoting);
+router.get("/getElection", getElection);
+router.get("/all", listAllElections);
+router.post("/start-voting", onlyAdmin, startVotingPhase);
+router.post("/start-result", onlyAdmin, startResultPhase);
+router.post("/end-election", onlyAdmin, endElection);
+router.post("/vote", authMiddleware, castVote);
+router.get("/results", getResults);
+router.get("/past-elections", listPastElectionsWithWinners);
+router.get("/blockchain-status", onlyAdmin, checkBlockchainStatus);
+router.post("/end-blockchain-election", onlyAdmin, endBlockchainElection);
+router.get("/debug-user", authMiddleware, debugUser);
+router.get("/debug-blockchain-votes", onlyAdmin, debugBlockchainVotes);
 
 export default router;

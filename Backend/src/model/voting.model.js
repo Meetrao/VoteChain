@@ -11,13 +11,17 @@ const VotingSchema = new mongoose.Schema({
   },
   phase: {
     type: String,
-    enum: ["registration", "voting", "result"],
-    default: "registration"
+    enum: ["pending", "registration", "voting", "result", "ended"],
+    default: "pending"
   },
-  startTime: { type: Date, required: true },
-  endTime: { type: Date, required: false, default: null },
-  votingStart: { type: Date, required: true }, // Keep for backward compatibility
-  votingEnd: { type: Date, required: false, default: null } // Keep for backward compatibility
+  startTime: {
+    type: Date,
+    required: true
+  },
+  blockchainElectionId: {
+    type: Number,
+    default: null
+  }
 }, { timestamps: true });
 
 const Voting = mongoose.model("Voting", VotingSchema);

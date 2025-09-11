@@ -2,7 +2,6 @@ import jwtUtil from "../utils/jwt.js";
 
 const authMiddleware = (req, res, next) => {
   try {
-    // Check if cookies exist
     if (!req.cookies) {
       return res.status(401).json({
         success: false,
@@ -20,6 +19,11 @@ const authMiddleware = (req, res, next) => {
     }
 
     const decoded = jwtUtil.verifyAccessToken(token);
+
+    // ADD THIS DEBUG LOG
+    console.log("Decoded token contents:", decoded);
+    console.log("userWalletAddress in token:", decoded.userWalletAddress);
+
     req.user = decoded;
     next();
 

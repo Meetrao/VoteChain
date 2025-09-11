@@ -15,16 +15,28 @@ const candidateSchema = new mongoose.Schema({
   },
   logo: {
     type: String,
-    required: false
+    required: true
   },
   candidateWalletAddress: {
     type: String,
+    required: true,
+    lowercase: true,
+    index: true
+  },
+  election: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Voting",
     required: true
+  },
+  status: {
+    type: String,
+    enum: ["pending", "confirmed", "rejected"],
+    default: "pending"
   }
 }, {
   timestamps: true
-})
+});
 
-const Candidate = mongoose.model("Candidate", candidateSchema);
+candidateSchema.index({ candidateWalletAddress: 1, election: 1 }, { unique: true });
 
-export default Candidate;
+export default mongoose.model("Candidate", candidateSchema);

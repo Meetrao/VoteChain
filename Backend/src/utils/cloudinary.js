@@ -12,7 +12,7 @@ cloudinary.config({
   api_secret: CLOUDINARY_API_SECERT,
 });
 
-const uploadFile = async (localFilePath) => {
+export const uploadFile = async (localFilePath) => {
   try {
     if (!localFilePath) {
       throw new Error("No file path provided");
@@ -34,4 +34,11 @@ const uploadFile = async (localFilePath) => {
   }
 };
 
-export default uploadFile;
+export const deleteFile = async (publicId) => {
+  try {
+    await cloudinary.uploader.destroy(publicId);
+    console.log("File deleted from Cloudinary:", publicId);
+  } catch (error) {
+    console.error("Cloudinary Delete Error:", error.message);
+  }
+};
