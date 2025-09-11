@@ -4,78 +4,131 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Voting is Ownable {
-    mapping(address => bool) public isWhiteListed;
-    mapping(address => uint) public votesCount;
-    mapping(address => bool) public hasVoted;
-    mapping(address => bool) public isCandidate;
+    struct Election {
+        uint256 id;
+        bool isActive;
+        address[] candidates;
+        mapping(address => bool) isCandidate;
+        mapping(address => uint256) votesCount;
+        mapping(address => bool) hasVoted;
+    }
 
-    event VoterWhitelisted(address indexed voter);
-    event CandidateRegistered(address indexed candidate);
-    event VoteCast(address indexed voter, address indexed candidate);
-    event VotingStarted();
-    event VotingEnded();
+    uint256 public currentElectionId;
+    mapping(uint256 => Election) private elections;
 
-    address[] public candidates;
-    bool public isVotingActive = false;
+    event ElectionCreated(uint256 indexed electionId);
+    event CandidateRegistered(uint256 indexed electionId, address candidate);
+    event VoteCast(uint256 indexed electionId, address voter, address candidate);
+    event ElectionEnded(uint256 indexed electionId);
 
     constructor(address initialOwner) Ownable(initialOwner) {}
 
-    function whiteListVoter(address voter) external onlyOwner {
-        require(!isWhiteListed[voter], "Already whitelisted");
-        isWhiteListed[voter] = true;
-        emit VoterWhitelisted(voter);
+    // 🔹 IMPROVEMENT: Add check to prevent creating election when one is active
+    function createElection() external onlyOwner {
+        // Prevent creating new election if current one is still active
+        if (currentElectionId > 0) {
+            require(!elections[currentElectionId].isActive, "An election is already active");
+        }
+        
+        currentElectionId++;
+        Election storage e = elections[currentElectionId];
+        e.id = currentElectionId;
+        e.isActive = true;
+
+        emit ElectionCreated(currentElectionId);
     }
 
-    function checkWhitelist(address voter) external view returns (bool) {
-        return isWhiteListed[voter];
-    }
-
+    // 🔹 IMPROVEMENT: Add validation for zero address
     function registerCandidate(address candidateWallet) external onlyOwner {
-        require(!isCandidate[candidateWallet], "candidate already exist");
-        candidates.push(candidateWallet);
-        isCandidate[candidateWallet] = true;
-        votesCount[candidateWallet] = 0;
-        emit CandidateRegistered(candidateWallet);
+        require(candidateWallet != address(0), "Invalid candidate address");
+        require(currentElectionId > 0, "No election created yet");
+        
+        Election storage e = elections[currentElectionId];
+        require(e.isActive, "No active election");
+        require(!e.isCandidate[candidateWallet], "Candidate already exists");
+
+        e.candidates.push(candidateWallet);
+        e.isCandidate[candidateWallet] = true;
+        e.votesCount[candidateWallet] = 0;
+
+        emit CandidateRegistered(currentElectionId, candidateWallet);
     }
 
-    function getCandidates() external view returns (address[] memory) {
-        return candidates;
+    // 🔹 IMPROVEMENT: Add validation and better error messages
+    function vote(address candidateWallet) external {
+        require(candidateWallet != address(0), "Invalid candidate address");
+        require(currentElectionId > 0, "No election created yet");
+        
+        Election storage e = elections[currentElectionId];
+        require(e.isActive, "No active election");
+        require(e.isCandidate[candidateWallet], "Candidate not registered");
+        require(!e.hasVoted[msg.sender], "Already voted");
+
+        e.votesCount[candidateWallet]++;
+        e.hasVoted[msg.sender] = true;
+
+        emit VoteCast(currentElectionId, msg.sender, candidateWallet);
     }
 
-    function getAllCandidatesWithVotes()
-        external
+    // 🔹 IMPROVEMENT: Add validation
+    function endElection() external onlyOwner {
+        require(currentElectionId > 0, "No election created yet");
+        
+        Election storage e = elections[currentElectionId];
+        require(e.isActive, "No active election");
+
+        e.isActive = false;
+        emit ElectionEnded(currentElectionId);
+    }
+
+    // 🔹 IMPROVEMENT: Add validation for election existence
+    function getCandidates(uint256 electionId) external view returns (address[] memory) {
+        require(electionId > 0 && electionId <= currentElectionId, "Invalid election ID");
+        return elections[electionId].candidates;
+    }
+
+    function getAllCandidatesWithVotes(uint256 electionId)
+        public
         view
         returns (address[] memory, uint256[] memory)
     {
-        uint256 len = candidates.length;
+        require(electionId > 0 && electionId <= currentElectionId, "Invalid election ID");
+        
+        Election storage e = elections[electionId];
+        uint256 len = e.candidates.length;
         uint256[] memory votes = new uint256[](len);
+
         for (uint256 i = 0; i < len; i++) {
-            votes[i] = votesCount[candidates[i]];
+            votes[i] = e.votesCount[e.candidates[i]];
         }
-        return (candidates, votes);
+        return (e.candidates, votes);
+    }
+    
+    function isCandidate(uint256 electionId, address wallet) external view returns (bool) {
+        if (electionId == 0 || electionId > currentElectionId) return false;
+        return elections[electionId].isCandidate[wallet];
     }
 
-    function vote(address candidateWallet) external {
-        require(isVotingActive, "Voting is not active");
-        require(isWhiteListed[msg.sender], "not Whitelisted");
-        require(!hasVoted[msg.sender], "Already voted");
-        require(isCandidate[candidateWallet], "Candidate not registered");
-        votesCount[candidateWallet] += 1;
-        hasVoted[msg.sender] = true;
-        emit VoteCast(msg.sender, candidateWallet);
+    function hasVoted(uint256 electionId, address wallet) external view returns (bool) {
+        if (electionId == 0 || electionId > currentElectionId) return false;
+        return elections[electionId].hasVoted[wallet];
     }
 
-    function getVotes(address candidateWallet) external view returns (uint256) {
-        return votesCount[candidateWallet];
+    // 🔹 NEW: Helper function to check if current election is active
+    function isCurrentElectionActive() external view returns (bool) {
+        if (currentElectionId == 0) return false;
+        return elections[currentElectionId].isActive;
     }
 
-    function startVoting() external onlyOwner {
-        isVotingActive = true;
-        emit VotingStarted();
+    // 🔹 NEW: Get current election candidates (convenience function)
+    function getCurrentCandidates() external view returns (address[] memory) {
+        require(currentElectionId > 0, "No election created yet");
+        return elections[currentElectionId].candidates;
     }
 
-    function endVoting() external onlyOwner {
-        isVotingActive = false;
-        emit VotingEnded();
+    // 🔹 NEW: Get current election candidates with votes
+    function getCurrentCandidatesWithVotes() external view returns (address[] memory, uint256[] memory) {
+        require(currentElectionId > 0, "No election created yet");
+        return getAllCandidatesWithVotes(currentElectionId);
     }
 }
