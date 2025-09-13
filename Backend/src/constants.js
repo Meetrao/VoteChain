@@ -18,4 +18,4 @@ export const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL
 export const SEPOLIA_PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY
 export const VITE_VOTING_CONTRACT_ADDRESS = process.env.VITE_VOTING_CONTRACT_ADDRESS
 export const ADMIN_WALLET = process.env.ADMIN_WALLET
-export const CORS_ORIGIN = process.env.CORS_ORIGIN
+export const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";

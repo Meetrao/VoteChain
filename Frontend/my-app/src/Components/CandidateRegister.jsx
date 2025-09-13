@@ -1,19 +1,24 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const CandidateRegister = () => {
+export default function CandidateRegister() {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     party: "",
-    slogan: ""
+    slogan: "",
   });
   const [walletAddress, setWalletAddress] = useState("");
-  // Connect to MetaMask and get wallet address
+  const [logo, setLogo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isDragOver, setIsDragOver] = useState(false);
+
   const connectWallet = async () => {
-    if (window.ethereum) {
+    if (typeof window !== "undefined" && window.ethereum) {
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
         setWalletAddress(accounts[0]);
         setMessage("✅ Wallet connected: " + accounts[0]);
       } catch (err) {
@@ -23,20 +28,39 @@ const CandidateRegister = () => {
       setMessage("❌ MetaMask not detected. Please install MetaMask.");
     }
   };
-  const [logo, setLogo] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleFileChange = (e) => {
-    setLogo(e.target.files[0]);
+    if (e.target.files && e.target.files[0]) setLogo(e.target.files[0]);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files && files[0] && files[0].type.startsWith("image/")) setLogo(files[0]);
+  };
+
+  const handleBrowseClick = () => {
+    const el = document.getElementById("file-input");
+    if (el) el.click();
   };
 
   const handleSubmit = async (e) => {
@@ -68,18 +92,10 @@ const CandidateRegister = () => {
 
       if (response.ok) {
         setMessage("✅ " + data.message);
-        // Reset form
-        setFormData({
-          name: "",
-          party: "",
-          slogan: ""
-        });
+        setFormData({ name: "", party: "", slogan: "" });
         setWalletAddress("");
         setLogo(null);
-        // Redirect to public page after 2 seconds
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
+        setTimeout(() => navigate("/"), 2000);
       } else {
         setMessage("❌ " + (data.message || "Registration failed"));
       }
@@ -91,234 +107,181 @@ const CandidateRegister = () => {
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={cardStyle}>
-        <button
-          onClick={() => navigate("/")}
-          style={backButtonStyle}
-        >
-          ← Back to Election Page
-        </button>
-
-        <h1 style={titleStyle}>📝 Candidate Registration</h1>
-
-        <div style={infoBoxStyle}>
-          <h3>📋 Registration Requirements:</h3>
-          <ul style={{ textAlign: "left", margin: "10px 0" }}>
-            <li>Valid wallet address for blockchain registration</li>
-            <li>Profile photo/logo (JPG, PNG format)</li>
-            <li>Party affiliation and campaign slogan</li>
-            <li>Registration only allowed during registration phase</li>
-          </ul>
+    <div className="min-h-screen bg-white flex">
+      {/* Left side - Illustration */}
+      <div className="hidden lg:flex lg:w-1/2 bg-white/10 items-center justify-center p-12">
+        <div className="max-w-full">
+          <img
+            src="https://i.pinimg.com/1200x/4e/d5/46/4ed546c7223daba8b671761abb9d1bc2.jpg"
+            alt="Election Illustration"
+            className="bg-black h-[500px] w-full translate-x-14 object-cover rounded-3xl"
+          />
         </div>
+      </div>
 
-        {message && (
-          <div style={{
-            ...messageStyle,
-            backgroundColor: message.includes("✅") ? "#d4edda" : "#f8d7da",
-            color: message.includes("✅") ? "#155724" : "#721c24",
-            border: `1px solid ${message.includes("✅") ? "#c3e6cb" : "#f5c6cb"}`
-          }}>
-            {message}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} style={formStyle}>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Full Name *</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Enter your full name"
-              style={inputStyle}
-              required
-            />
-          </div>
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Party Affiliation *</label>
-            <input
-              type="text"
-              name="party"
-              value={formData.party}
-              onChange={handleInputChange}
-              placeholder="e.g., Democratic Party, Independent, etc."
-              style={inputStyle}
-              required
-            />
-          </div>
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Campaign Slogan *</label>
-            <input
-              type="text"
-              name="slogan"
-              value={formData.slogan}
-              onChange={handleInputChange}
-              placeholder="Enter your campaign slogan"
-              style={inputStyle}
-              required
-            />
-          </div>
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Wallet Address *</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <input
-                type="text"
-                value={walletAddress}
-                readOnly
-                placeholder="Connect your wallet"
-                style={{ ...inputStyle, backgroundColor: '#f3f4f6', color: '#374151', flex: 1 }}
-                required
-              />
-              <button type="button" onClick={connectWallet} style={{ padding: '8px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
-                {walletAddress ? 'Connected' : 'Connect Wallet'}
+      {/* Right side - Registration Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-3xl shadow-xl border border-black/10 p-8 relative overflow-hidden">
+            {/* Back button */}
+            <div className="mb-4">
+              <button
+                onClick={() => navigate("/")}
+                className="text-sm text-gray-600 hover:text-black transition-colors"
+              >
+                ← Back to Election Page
               </button>
             </div>
-            <small style={{ color: "#6b7280", fontSize: "12px" }}>
-              Your Ethereum wallet address for blockchain registration
-            </small>
+
+            {message && (
+              <div
+                className={`mb-4 p-3 rounded-lg text-sm text-center border ${message.includes("✅")
+                    ? "bg-green-100 text-green-700 border-green-200"
+                    : "bg-red-100 text-red-700 border-red-200"
+                  }`}
+              >
+                {message}
+              </div>
+            )}
+
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-montserrat font-semibold text-black mb-2">
+                Candidate Registration
+              </h1>
+              <p className="text-gray-500 text-sm">Register during the Registration phase only</p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="w-full h-12 px-4 bg-gray-100 hover:border border-black/20 rounded-full text-gray-900 text-base outline-none transition-all duration-75"
+                  required
+                />
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  name="party"
+                  placeholder="Party Affiliation"
+                  value={formData.party}
+                  onChange={handleInputChange}
+                  className="w-full h-12 px-4 bg-gray-100 hover:border border-black/20 rounded-full text-gray-900 text-base outline-none transition-all duration-200 focus:bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  name="slogan"
+                  placeholder="Campaign Slogan"
+                  value={formData.slogan}
+                  onChange={handleInputChange}
+                  className="w-full h-12 px-4 bg-gray-100 hover:border border-black/20 rounded-full text-gray-900 text-base outline-none transition-all duration-200 focus:bg-white"
+                  required
+                />
+              </div>
+
+              {/* Wallet connect */}
+              <div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={walletAddress}
+                    readOnly
+                    placeholder="Connect your wallet"
+                    className="flex-1 h-12 px-4 bg-gray-100 hover:border border-black/20 rounded-full text-gray-900 text-base outline-none"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={connectWallet}
+                    className="bg-black text-white rounded-full px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    {walletAddress ? "Connected" : "Connect"}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Your Ethereum wallet address for blockchain registration
+                </p>
+              </div>
+
+              {/* File dropzone */}
+              <div>
+                <div
+                  className={`relative border-2 border-dashed rounded-3xl p-8 text-center transition-colors cursor-pointer ${isDragOver ? "border-green-500 bg-green-50" : "border-gray-300 bg-gray-50 hover:border-gray-400"
+                    }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={handleBrowseClick}
+                >
+                  <input
+                    id="file-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    required
+                  />
+                  <div className="mb-4 flex justify-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                      <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12 2L22 20H2L12 2Z" fill="#22c55e" stroke="#22c55e" strokeWidth="1" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="text-gray-600">
+                    <p className="text-base font-medium mb-1">
+                      {logo ? logo.name : "Drop your image here, or browse"}
+                    </p>
+                    <p className="text-sm text-gray-500">Supports: PNG, JPG, JPEG, WEBP</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <div className="flex items-center justify-between pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-black text-white rounded-full px-8 py-3 font-normal text-base hover:bg-gray-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Registering..." : "REGISTER"}
+                </button>
+              </div>
+
+              {/* Terms */}
+              <div className="flex items-start space-x-2 pt-4">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  className="mt-1 w-4 h-4 text-slate-800 bg-gray-100 border-gray-300 rounded-full"
+                />
+                <label htmlFor="terms" className="text-xs text-gray-600 leading-relaxed">
+                  By registering your details, you agree with our{" "}
+                  <span className="text-slate-800 underline cursor-pointer">Terms & Conditions</span> and{" "}
+                  <span className="text-slate-800 underline cursor-pointer">Privacy and Cookie Policy</span>.
+                </label>
+              </div>
+            </form>
           </div>
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Profile Logo/Photo *</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              style={fileInputStyle}
-              required
-            />
-            <small style={{ color: "#6b7280", fontSize: "12px" }}>
-              Upload a clear photo or logo (JPG, PNG format)
-            </small>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              ...submitButtonStyle,
-              opacity: loading ? 0.6 : 1,
-              cursor: loading ? "not-allowed" : "pointer"
-            }}
-          >
-            {loading ? "Registering..." : "Register as Candidate"}
-          </button>
-        </form>
-
-        <div style={footerStyle}>
-          <p style={{ fontSize: "12px", color: "#6b7280" }}>
-            🔒 Your registration will be recorded on the blockchain for transparency
-          </p>
         </div>
       </div>
     </div>
   );
-};
-
-// Styles
-const containerStyle = {
-  minHeight: "100vh",
-  backgroundColor: "#f3f4f6",
-  padding: "20px",
-  fontFamily: "Arial, sans-serif",
-};
-
-const cardStyle = {
-  maxWidth: "600px",
-  margin: "0 auto",
-  backgroundColor: "white",
-  borderRadius: "12px",
-  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-  padding: "30px",
-};
-
-const backButtonStyle = {
-  padding: "8px 16px",
-  backgroundColor: "#6b7280",
-  color: "white",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-  marginBottom: "20px",
-  fontSize: "14px",
-};
-
-const titleStyle = {
-  textAlign: "center",
-  margin: "0 0 30px 0",
-  color: "#1f2937",
-  fontSize: "28px",
-};
-
-const infoBoxStyle = {
-  backgroundColor: "#eff6ff",
-  border: "1px solid #bfdbfe",
-  borderRadius: "8px",
-  padding: "15px",
-  marginBottom: "25px",
-};
-
-const messageStyle = {
-  padding: "10px",
-  borderRadius: "5px",
-  marginBottom: "20px",
-  textAlign: "center",
-};
-
-const formStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "20px",
-};
-
-const fieldStyle = {
-  display: "flex",
-  flexDirection: "column",
-};
-
-const labelStyle = {
-  fontWeight: "600",
-  marginBottom: "5px",
-  color: "#374151",
-};
-
-const inputStyle = {
-  padding: "12px",
-  border: "1px solid #d1d5db",
-  borderRadius: "6px",
-  fontSize: "16px",
-  transition: "border-color 0.2s",
-};
-
-const fileInputStyle = {
-  padding: "8px",
-  border: "1px solid #d1d5db",
-  borderRadius: "6px",
-  fontSize: "14px",
-  backgroundColor: "#f9fafb",
-};
-
-const submitButtonStyle = {
-  padding: "15px",
-  backgroundColor: "#3b82f6",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "600",
-  marginTop: "10px",
-};
-
-const footerStyle = {
-  textAlign: "center",
-  marginTop: "20px",
-  paddingTop: "20px",
-  borderTop: "1px solid #e5e7eb",
-};
-
-export default CandidateRegister;
+}

@@ -33,7 +33,7 @@ export default function VotingDashboard() {
         });
         setCandidates(candRes?.candidates || []);
 
-        // 🔧 NEW: If election is in result phase, fetch results
+        // If election is in result phase, fetch results
         if (electionRes.election.phase === "result") {
           await fetchResults();
         }
@@ -53,15 +53,11 @@ export default function VotingDashboard() {
     }
   };
 
-  // 🔧 NEW: Function to fetch results
   const fetchResults = async () => {
     try {
       const { data: resultsRes } = await axios.get("/voting/results");
-
-      // Sort candidates by vote count in descending order
       const sortedResults = resultsRes.results.sort((a, b) => b.votes - a.votes);
       setResults(sortedResults);
-
       console.log("Fetched results:", sortedResults);
     } catch (error) {
       console.error("Error fetching results:", error);
@@ -124,237 +120,127 @@ export default function VotingDashboard() {
     }
   };
 
-  // 🔧 NEW: Function to render results phase
+  // Results view (styled, logic unchanged)
   const renderResults = () => {
     const totalVotes = results.reduce((sum, candidate) => {
-      const votes = Number(candidate.votes) || 0; // 🔧 FIX: Ensure it's a number
+      const votes = Number(candidate.votes) || 0;
       return sum + votes;
     }, 0);
 
     return (
-      <div style={{
-        border: "2px solid #28a745",
-        borderRadius: 12,
-        padding: 32,
-        marginBottom: 32,
-        backgroundColor: "#f8f9fa"
-      }}>
-        <div style={{ textAlign: "center", marginBottom: 30 }}>
-          <h3 style={{
-            color: "#28a745",
-            fontSize: "28px",
-            marginBottom: "10px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "10px"
-          }}>
-            🏆 Election Results: {election.title}
-          </h3>
-          <p style={{
-            fontSize: "18px",
-            color: "#666",
-            margin: "5px 0"
-          }}>
-            Total Votes Cast: <strong>{totalVotes}</strong>
-          </p>
-          <p style={{
-            fontSize: "16px",
-            color: "#888",
-            fontStyle: "italic"
-          }}>
-            Results are sorted by vote count (highest to lowest)
-          </p>
+      <div className="space-y-6">
+        {/* Summary Card */}
+        <div className="bg-white rounded-3xl border border-black/10 p-6 md:p-8 shadow-sm">
+          <div className="text-center mb-6">
+            <h3 className="text-2xl md:text-3xl font-montserrat font-semibold text-emerald-600">
+              🏆 Election Results: {election.title}
+            </h3>
+            <p className="text-gray-600 mt-2">
+              Total Votes Cast: <span className="font-semibold text-gray-800">{totalVotes}</span>
+            </p>
+            <p className="text-sm text-gray-500 italic mt-1">
+              Results are sorted by vote count (highest to lowest)
+            </p>
+          </div>
+
+          {results.length === 0 ? (
+            <div className="text-center text-gray-600 py-10">
+              <p className="text-lg">No candidates found for this election.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {results.map((candidate, index) => {
+                const votes = Number(candidate.votes) || 0;
+                const isWinner = index === 0 && votes > 0;
+                const votePercentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : "0.0";
+
+                return (
+                  <div
+                    key={candidate.candidateWalletAddress || candidate._id}
+                    className={`relative rounded-2xl border p-4 md:p-6 bg-white shadow-sm flex flex-col md:flex-row items-center gap-4 md:gap-6 ${
+                      isWinner ? "border-yellow-300 ring-1 ring-yellow-200" : "border-gray-200"
+                    }`}
+                  >
+                    {/* Winner badge */}
+                    {isWinner && (
+                      <div className="absolute -top-3 right-4 bg-yellow-400 text-gray-900 font-semibold text-xs px-3 py-1 rounded-full shadow">
+                        🏆 WINNER
+                      </div>
+                    )}
+
+                    {/* Position */}
+                    <div
+                      className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-lg md:text-xl font-bold flex-shrink-0 ${
+                        isWinner ? "bg-yellow-300 text-gray-900" : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      #{index + 1}
+                    </div>
+
+                    {/* Logo */}
+                    {candidate.logo && (
+                      <img
+                        src={candidate.logo}
+                        alt={`${candidate.name} logo`}
+                        className={`w-16 h-16 md:w-20 md:h-20 rounded-full object-cover flex-shrink-0 ${
+                          isWinner ? "ring-2 ring-yellow-300" : "ring-1 ring-gray-200"
+                        }`}
+                      />
+                    )}
+
+                    {/* Info */}
+                    <div className="flex-1 text-center md:text-left">
+                      <h4 className={`text-xl md:text-2xl font-semibold ${isWinner ? "text-gray-900" : "text-gray-800"}`}>
+                        {candidate.name || "Unknown Candidate"}
+                      </h4>
+                      <p className="text-gray-600 font-semibold mt-1">Party: {candidate.party || "Independent"}</p>
+                      <p className="text-gray-500 italic mt-2">"{candidate.slogan || "No slogan"}"</p>
+                    </div>
+
+                    {/* Votes */}
+                    <div className="text-right min-w-[120px]">
+                      <div className={`text-3xl font-bold leading-none ${isWinner ? "text-yellow-500" : "text-emerald-600"}`}>
+                        {votes}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">votes</div>
+                      <div className={`mt-2 text-lg font-semibold ${isWinner ? "text-gray-800" : "text-gray-700"}`}>
+                        {votePercentage}%
+                      </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="w-full h-1.5 bg-gray-200 rounded-full md:absolute md:bottom-0 md:left-0 md:rounded-b-2xl md:rounded-t-none">
+                      <div
+                        className={`h-1.5 rounded-full ${isWinner ? "bg-yellow-400" : "bg-emerald-600"}`}
+                        style={{ width: `${votePercentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {results.length === 0 ? (
-          <div style={{
-            textAlign: "center",
-            padding: "40px",
-            color: "#666"
-          }}>
-            <p style={{ fontSize: "18px" }}>No candidates found for this election.</p>
-          </div>
-        ) : (
-          <div style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "20px"
-          }}>
-            {results.map((candidate, index) => {
-              // 🔧 FIX: Safely handle vote count
-              const votes = Number(candidate.votes) || 0;
-              const isWinner = index === 0 && votes > 0;
-              const votePercentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : "0.0";
-
-              return (
-                <div
-                  key={candidate.candidateWalletAddress || candidate._id}
-                  style={{
-                    border: isWinner ? "3px solid #ffd700" : "2px solid #ddd",
-                    borderRadius: 12,
-                    padding: 24,
-                    backgroundColor: isWinner ? "#fff9e6" : "white",
-                    boxShadow: isWinner
-                      ? "0 8px 24px rgba(255, 215, 0, 0.3)"
-                      : "0 4px 12px rgba(0, 0, 0, 0.1)",
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "20px"
-                  }}
-                >
-                  {/* Winner Badge */}
-                  {isWinner && (
-                    <div style={{
-                      position: "absolute",
-                      top: "-10px",
-                      right: "20px",
-                      background: "linear-gradient(135deg, #ffd700, #ffed4e)",
-                      color: "#333",
-                      padding: "8px 16px",
-                      borderRadius: "20px",
-                      fontWeight: "bold",
-                      fontSize: "14px",
-                      boxShadow: "0 4px 12px rgba(255, 215, 0, 0.4)",
-                      border: "2px solid #ffd700"
-                    }}>
-                      🏆 WINNER
-                    </div>
-                  )}
-
-                  {/* Position Number */}
-                  <div style={{
-                    width: "60px",
-                    height: "60px",
-                    borderRadius: "50%",
-                    backgroundColor: isWinner ? "#ffd700" : "#e9ecef",
-                    color: isWinner ? "#333" : "#666",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    flexShrink: 0
-                  }}>
-                    #{index + 1}
-                  </div>
-
-                  {/* Candidate Logo */}
-                  {candidate.logo && (
-                    <img
-                      src={candidate.logo}
-                      alt={`${candidate.name} logo`}
-                      style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                        border: isWinner ? "3px solid #ffd700" : "2px solid #ddd",
-                        flexShrink: 0
-                      }}
-                    />
-                  )}
-
-                  {/* Candidate Info */}
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{
-                      margin: "0 0 8px 0",
-                      color: isWinner ? "#333" : "#444",
-                      fontSize: "24px"
-                    }}>
-                      {candidate.name || "Unknown Candidate"}
-                    </h4>
-                    <p style={{
-                      margin: "4px 0",
-                      color: "#666",
-                      fontSize: "16px",
-                      fontWeight: "600"
-                    }}>
-                      Party: {candidate.party || "Independent"}
-                    </p>
-                    <p style={{
-                      margin: "8px 0 0 0",
-                      fontStyle: "italic",
-                      color: "#777",
-                      fontSize: "14px"
-                    }}>
-                      "{candidate.slogan || "No slogan"}"
-                    </p>
-                  </div>
-
-                  {/* Vote Count and Percentage */}
-                  <div style={{
-                    textAlign: "right",
-                    minWidth: "150px"
-                  }}>
-                    <div style={{
-                      fontSize: "32px",
-                      fontWeight: "bold",
-                      color: isWinner ? "#ffd700" : "#28a745",
-                      lineHeight: 1
-                    }}>
-                      {votes}
-                    </div>
-                    <div style={{
-                      fontSize: "14px",
-                      color: "#666",
-                      marginTop: "4px"
-                    }}>
-                      votes
-                    </div>
-                    <div style={{
-                      fontSize: "18px",
-                      fontWeight: "600",
-                      color: isWinner ? "#333" : "#555",
-                      marginTop: "8px"
-                    }}>
-                      {votePercentage}%
-                    </div>
-                  </div>
-
-                  {/* Vote Percentage Bar */}
-                  <div style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    width: `${votePercentage}%`,
-                    height: "4px",
-                    backgroundColor: isWinner ? "#ffd700" : "#28a745",
-                    borderRadius: "0 0 12px 12px"
-                  }}></div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Election Summary */}
-        <div style={{
-          marginTop: 30,
-          padding: 20,
-          backgroundColor: "white",
-          borderRadius: 8,
-          border: "1px solid #ddd"
-        }}>
-          <h4 style={{ color: "#333", marginBottom: 15 }}>Election Summary</h4>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "15px",
-            fontSize: "14px"
-          }}>
-            <div>
-              <strong>Election:</strong> {election.title}
+        {/* Election Summary (minimal) */}
+        <div className="bg-white rounded-2xl border border-black/10 p-5 shadow-sm">
+          <h4 className="text-lg font-semibold text-gray-800 mb-3">Election Summary</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div className="bg-gray-50 rounded-xl p-3">
+              <span className="text-gray-500">Election</span>
+              <div className="font-semibold text-gray-800">{election.title}</div>
             </div>
-            <div>
-              <strong>Phase:</strong> <span style={{ color: "#28a745" }}>Results</span>
+            <div className="bg-gray-50 rounded-xl p-3">
+              <span className="text-gray-500">Phase</span>
+              <div className="font-semibold text-emerald-600">Results</div>
             </div>
-            <div>
-              <strong>Total Candidates:</strong> {results.length}
+            <div className="bg-gray-50 rounded-xl p-3">
+              <span className="text-gray-500">Total Candidates</span>
+              <div className="font-semibold text-gray-800">{results.length}</div>
             </div>
-            <div>
-              <strong>Total Votes:</strong> {totalVotes}
+            <div className="bg-gray-50 rounded-xl p-3">
+              <span className="text-gray-500">Total Votes</span>
+              <div className="font-semibold text-gray-800">{totalVotes}</div>
             </div>
           </div>
         </div>
@@ -362,98 +248,45 @@ export default function VotingDashboard() {
     );
   };
 
-  // 🔧 NEW: Function to render voting phase (existing code)
+  // Voting view (styled, logic unchanged)
   const renderVoting = () => {
     return (
-      <div
-        style={{
-          border: "1px solid #ccc",
-          borderRadius: 8,
-          padding: 24,
-          marginBottom: 32,
-        }}
-      >
-        <h3>
-          Election:{" "}
-          <span style={{ color: "#2563eb" }}>{election.title}</span>
-        </h3>
-        <p>
-          Phase: <b>{election.phase}</b>
-        </p>
-        <h4>Candidates:</h4>
+      <div className="bg-white rounded-3xl border border-black/10 p-6 md:p-8 shadow-sm">
+        <div className="mb-4">
+          <h3 className="text-xl md:text-2xl font-semibold text-gray-800">
+            Election: <span className="text-blue-600">{election.title}</span>
+          </h3>
+          <p className="text-gray-600">
+            Phase: <b className="text-gray-800">{election.phase}</b>
+          </p>
+        </div>
+
+        <h4 className="text-lg font-semibold text-gray-800 mb-4">Candidates</h4>
+
         {candidates.length === 0 ? (
-          <p>No candidates registered yet.</p>
+          <p className="text-gray-600">No candidates registered yet.</p>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "20px",
-            }}
-          >
+          <div className="grid gap-4 sm:grid-cols-2">
             {candidates.map((candidate) => (
               <div
                 key={candidate._id}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: 8,
-                  padding: 16,
-                  textAlign: "center",
-                  backgroundColor: "#f9f9f9",
-                }}
+                className="border border-gray-200 rounded-2xl p-5 text-center bg-gray-50"
               >
                 {candidate.logo && (
                   <img
                     src={candidate.logo}
                     alt={`${candidate.name} logo`}
-                    style={{
-                      width: 80,
-                      height: 80,
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                      marginBottom: 12,
-                      border: "2px solid #ddd",
-                    }}
+                    className="w-20 h-20 rounded-full object-cover mx-auto mb-3 ring-1 ring-gray-300"
                   />
                 )}
-                <h4 style={{ margin: "8px 0", color: "#333" }}>
-                  {candidate.name}
-                </h4>
-                <p
-                  style={{
-                    margin: "4px 0",
-                    fontWeight: "bold",
-                    color: "#666",
-                  }}
-                >
-                  Party: {candidate.party}
-                </p>
-                <p
-                  style={{
-                    margin: "8px 0",
-                    fontStyle: "italic",
-                    color: "#555",
-                  }}
-                >
-                  "{candidate.slogan}"
-                </p>
+                <h4 className="text-lg font-semibold text-gray-800">{candidate.name}</h4>
+                <p className="text-gray-600 font-semibold mt-1">Party: {candidate.party}</p>
+                <p className="text-gray-500 italic mt-2">"{candidate.slogan}"</p>
 
-                {/* Vote button - only show in voting phase */}
                 {election.phase === "voting" && (
                   <button
                     onClick={() => handleVote(candidate)}
-                    style={{
-                      marginTop: "12px",
-                      padding: "10px 20px",
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                      fontSize: "14px",
-                    }}
+                    className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors"
                   >
                     Vote for {candidate.name}
                   </button>
@@ -467,67 +300,51 @@ export default function VotingDashboard() {
   };
 
   return (
-    <div style={{ padding: 40, maxWidth: 1000, margin: "0 auto" }}>
-      <button
-        onClick={handleLogout}
-        style={{
-          position: "absolute",
-          top: 20,
-          right: 20,
-          padding: "8px 16px",
-          background: "#ef4444",
-          color: "#fff",
-          border: "none",
-          borderRadius: 6,
-          cursor: "pointer",
-        }}
-      >
-        Logout
-      </button>
-
-      <h2>
-        {election?.phase === "result" ? "🏆 Election Results" : "Voting Dashboard"}
-      </h2>
-
-      {votingMessage && (
-        <div
-          style={{
-            padding: "12px",
-            marginBottom: "20px",
-            backgroundColor: votingMessage.includes("✅") ? "#d4edda" : "#f8d7da",
-            border: `1px solid ${votingMessage.includes("✅") ? "#c3e6cb" : "#f5c6cb"}`,
-            borderRadius: "6px",
-            color: votingMessage.includes("✅") ? "#155724" : "#721c24",
-          }}
+    <div className="min-h-screen bg-white">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="absolute top-4 right-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full text-sm font-medium shadow-sm transition-colors"
         >
-          {votingMessage}
-        </div>
-      )}
+          Logout
+        </button>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : message ? (
-        <p>{message}</p>
-      ) : election ? (
-        // 🔧 NEW: Conditional rendering based on election phase
-        election.phase === "result" ? renderResults() : renderVoting()
-      ) : null}
+        <h2 className="text-2xl md:text-3xl font-montserrat font-semibold text-gray-900 mb-4">
+          {election?.phase === "result" ? "🏆 Election Results" : "Voting Dashboard"}
+        </h2>
 
-      {/* Debug button - you can remove this later */}
-      <button
-        onClick={handleDebugUser}
-        style={{
-          padding: "10px",
-          margin: "10px",
-          fontSize: "12px",
-          backgroundColor: "#6c757d",
-          color: "white",
-          border: "none",
-          borderRadius: "4px"
-        }}
-      >
-        Debug User Data
-      </button>
+        {votingMessage && (
+          <div
+            className={`mb-4 rounded-2xl px-4 py-3 border ${
+              votingMessage.includes("✅")
+                ? "bg-green-50 border-green-200 text-green-800"
+                : "bg-red-50 border-red-200 text-red-800"
+            }`}
+          >
+            {votingMessage}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex items-center gap-2 text-gray-600">
+            <span className="inline-block h-4 w-4 rounded-full border-2 border-gray-300 border-t-gray-600 animate-spin" />
+            Loading...
+          </div>
+        ) : message ? (
+          <p className="text-gray-600">{message}</p>
+        ) : election ? (
+          election.phase === "result" ? renderResults() : renderVoting()
+        ) : null}
+
+        {/* Debug button */}
+        <button
+          onClick={handleDebugUser}
+          className="mt-6 px-4 py-2 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+        >
+          Debug User Data
+        </button>
+      </div>
     </div>
   );
 }

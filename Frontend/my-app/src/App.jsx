@@ -6,6 +6,7 @@ import Register from "./Components/Register";
 import AdminDashboard from "./Components/AdminDashboard";
 import VotingDashboard from "./Components/VotingDashboard";
 import CandidateRegister from "./Components/CandidateRegister";
+import './index.css'
 
 const App = () => (
   <Router>
