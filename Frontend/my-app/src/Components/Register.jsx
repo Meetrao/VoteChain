@@ -12,6 +12,10 @@ export default function Register() {
   const [showFace, setShowFace] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  // NEW: voter ID verification state
+  const [verifyingVoter, setVerifyingVoter] = useState(false);
+  const [voterVerifyMsg, setVoterVerifyMsg] = useState("");
+  const [isVoterValid, setIsVoterValid] = useState(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -46,6 +50,36 @@ export default function Register() {
 
   const handleChange = async (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // NEW: verify voter ID against mock API and auto-fill name
+  const handleVerifyVoterId = async () => {
+    setVoterVerifyMsg("");
+    setIsVoterValid(null);
+    if (!form.voter_id?.trim()) {
+      setVoterVerifyMsg("Please enter a Voter ID");
+      setIsVoterValid(false);
+      return;
+    }
+    try {
+      setVerifyingVoter(true);
+      const res = await axios.post("http://localhost:5000/api/mock/verify-voter", {
+        voterId: form.voter_id.trim(),
+      });
+      if (res.data?.status === "VALID") {
+        setForm((prev) => ({ ...prev, name: res.data.name || prev.name }));
+        setIsVoterValid(true);
+        setVoterVerifyMsg("Voter ID valid");
+      } else {
+        setIsVoterValid(false);
+        setVoterVerifyMsg("Voter ID invalid");
+      }
+    } catch (error) {
+      setIsVoterValid(false);
+      setVoterVerifyMsg(error.response?.data?.message || "Verification failed");
+    } finally {
+      setVerifyingVoter(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -170,16 +204,35 @@ export default function Register() {
                 />
               </div>
 
+              {/* UPDATED: voter ID + verify button + message */}
               <div>
-                <input
-                  name="voter_id"
-                  type="text"
-                  placeholder="Voter ID"
-                  value={form.voter_id}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 focus:border-[#8B5CF6] focus:ring-0 focus:outline-none px-3 py-2 rounded-full"
-                />
+                <div className="flex items-center gap-2">
+                  <input
+                    name="voter_id"
+                    type="text"
+                    placeholder="Voter ID"
+                    value={form.voter_id}
+                    onChange={handleChange}
+                    required
+                    className="flex-1 border border-gray-300 focus:border-[#8B5CF6] focus:ring-0 focus:outline-none px-3 py-2 rounded-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleVerifyVoterId}
+                    disabled={verifyingVoter}
+                    className="px-4 py-2 rounded-full bg-black hover:bg-gray-900 text-white font-medium disabled:opacity-60"
+                  >
+                    {verifyingVoter ? "Checking..." : "Verify"}
+                  </button>
+                </div>
+                {voterVerifyMsg && (
+                  <div
+                    className={`mt-2 inline-block px-3 py-2 rounded-full text-sm ${isVoterValid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      }`}
+                  >
+                    {voterVerifyMsg}
+                  </div>
+                )}
               </div>
 
               <div>
