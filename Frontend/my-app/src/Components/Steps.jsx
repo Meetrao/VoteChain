@@ -7,45 +7,45 @@ export default function Home() {
 
   const steps = [
     {
-      id: "market-assessment",
-      title: "Market Assessment & Competitive Analysis",
+      id: "install-metamask",
+      title: "Install MetaMask",
       content:
-        "In today's rapidly evolving business landscape, identifying and capitalizing on emerging opportunities requires a strategic approach that combines market intelligence, competitive analysis, and innovative thinking. Our comprehensive business strategy framework begins with a thorough assessment of market dynamics and competitive positioning.",
+        "Download and install the MetaMask extension from metamask.io on your browser. This will serve as your digital wallet and secure identity for voting.",
     },
     {
-      id: "opportunity-identification",
-      title: "Opportunity Identification Process",
+      id: "create-wallet",
+      title: "Create or Import Wallet",
       content:
-        "The opportunity identification process involves multiple layers of analysis, including customer needs assessment, technology trend evaluation, and regulatory environment scanning. By systematically examining these factors, businesses can uncover hidden opportunities that align with their core competencies and strategic objectives.",
+        "Open MetaMask and either create a new wallet or import an existing one using your Secret Recovery Phrase. This wallet will generate your unique blockchain address for voting.",
     },
     {
-      id: "market-research",
-      title: "Market Research & Validation",
+      id: "secure-seed",
+      title: "Secure Your Recovery Phrase",
       content:
-        "Market research plays a crucial role in validating potential opportunities. Through primary and secondary research methodologies, organizations can gather critical insights about customer preferences, market size, growth potential, and competitive intensity. This data-driven approach ensures that strategic decisions are based on solid evidence rather than assumptions.",
+        "Write down the 12-word Secret Recovery Phrase and store it safely offline. This is your master key — never share it. Losing it means losing access to your voting account.",
     },
     {
-      id: "risk-assessment",
-      title: "Risk Assessment & Mitigation",
+      id: "register-voter",
+      title: "Register as a Voter",
       content:
-        "Risk assessment is equally important in the opportunity evaluation process. Every business opportunity carries inherent risks that must be carefully analyzed and mitigated. Our framework includes comprehensive risk modeling that considers financial, operational, regulatory, and reputational factors.",
+        "Go to the voting dApp and connect your MetaMask wallet. Provide your voter ID for verification. Once approved, your wallet address will be linked to your voter profile.",
     },
     {
-      id: "implementation-planning",
-      title: "Implementation Planning & Execution",
+      id: "login-wallet",
+      title: "Login Using Wallet",
       content:
-        "Implementation planning transforms identified opportunities into actionable strategies. This involves resource allocation, timeline development, milestone setting, and performance measurement systems. A well-structured implementation plan increases the likelihood of successful opportunity realization.",
+        "On election day, open the dApp and click 'Connect Wallet'. MetaMask will prompt you to sign a secure message, confirming your identity without exposing your private key.",
     },
     {
-      id: "monitoring-adaptation",
-      title: "Continuous Monitoring & Adaptation",
+      id: "cast-vote",
+      title: "Cast Your Vote",
       content:
-        "Continuous monitoring and adaptation are essential components of effective opportunity management. Market conditions change rapidly, and successful organizations must remain agile and responsive to evolving circumstances. Regular strategy reviews and course corrections ensure that businesses stay on track toward their objectives.",
+        "After login, select your candidate and confirm your vote. MetaMask will sign and submit the transaction to the blockchain, ensuring your vote is secure, transparent, and tamper-proof.",
     },
   ]
 
-  const title = "Unlocking the opportunity, Business strategy"
-  const videoUrl = "/business-strategy-opportunity-unlock.mp4" // replace with your video path
+  const title = "MetaMask Setup for Blockchain Voting"
+  const videoUrl = "/metamask-voting-demo.mp4" // Replace with your own demo video path
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,34 +79,29 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white my-20">
-        {/* Steps to be Followed Heading */}
-          <div className=" text-center">
-            <h2 className="text-6xl font-semibold text-slate-800 mb-2">Steps to be Followed</h2>
-          </div>
+      {/* Heading */}
+      <div className="text-center">
+        <h2 className="text-6xl font-semibold text-slate-800 mb-2">
+          Steps to Set Up MetaMask for Voting
+        </h2>
+      </div>
       <div className="flex">
-        {/* Left Side - Video and Title */}
+        {/* Left Side - Video + Title */}
         <div className="sticky top-0 h-screen w-1/2 bg-white p-12 flex flex-col justify-center">
           <div className="space-y-8 text-center">
             <div className="w-full h-96 mx-auto bg-gray-100 rounded-3xl flex items-center justify-center overflow-hidden ">
               <video
-                src={videoUrl}
+                src="https://res.cloudinary.com/dcnt7n5bo/video/upload/v1758318092/IMG_6410_jyibq2.mp4"
                 autoPlay
                 loop
                 muted
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover  rounded-3xl"
               />
             </div>
 
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 leading-tight text-balance">
-                {title.split(", ").map((part, index) => (
-                  <span key={index}>
-                    {part}
-                    {index === 0 && <br />}
-                    {index === 1 && <span className="text-green-500 ml-2">{part}</span>}
-                    {index !== 1 && index !== 0 && part}
-                  </span>
-                ))}
+              <h1 className="text-3xl font-bold text-slate-800 leading-tight">
+                {title}
               </h1>
             </div>
 
@@ -120,7 +115,10 @@ export default function Home() {
         {/* Right Side - Steps with Timeline */}
         <div className="w-1/2 p-12" ref={containerRef}>
           <div className="relative">
-            <div className="absolute left-0 top-0 w-0.5 bg-white" style={{ height: "100%" }}>
+            <div
+              className="absolute left-0 top-0 w-0.5 bg-white"
+              style={{ height: "100%" }}
+            >
               <div
                 className="w-full bg-green-400 transition-all duration-500 ease-out"
                 style={{
@@ -131,7 +129,11 @@ export default function Home() {
 
             <div className="pl-8 space-y-12">
               {steps.map((step, index) => (
-                <div key={step.id} ref={(el) => (stepRefs.current[index] = el)} className="relative">
+                <div
+                  key={step.id}
+                  ref={(el) => (stepRefs.current[index] = el)}
+                  className="relative"
+                >
                   <div
                     className={`absolute -left-11 w-6 h-6 rounded-full border-4 border-white shadow-lg transition-all duration-300 ${
                       index <= activeStep ? "bg-green-600" : "bg-slate-300"
@@ -140,8 +142,12 @@ export default function Home() {
                   />
 
                   <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-slate-800">{step.title}</h3>
-                    <p className="text-slate-600 leading-relaxed text-lg">{step.content}</p>
+                    <h3 className="text-xl font-semibold text-slate-800">
+                      {step.title}
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed text-lg">
+                      {step.content}
+                    </p>
                   </div>
                 </div>
               ))}

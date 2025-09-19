@@ -1,25 +1,27 @@
 import { useState } from "react"
-import { ChevronLeft, ChevronRight,LockKeyhole } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShieldCheck, LockKeyhole, Vote } from "lucide-react"
 
-
-const newsCards = [
+const updateCards = [
   {
     id: 1,
-    title: "Calling on WhatsApp: New ways to plan ahead and take part",
+    title: "Secure Wallet Login",
     description:
-      "Today we're announcing new features on WhatsApp that make group calls easier to plan, and more interactive.",
+      "Your digital wallet is your identity. We use blockchain wallets to ensure every voter has a unique, tamper-proof login.",
+    icon: <LockKeyhole className="w-6 h-6 text-green-600" />,
   },
   {
     id: 2,
-    title: "Catch up on conversations with Private Message Summaries",
+    title: "End-to-End Encryption",
     description:
-      "We're excited to introduce Message Summaries, an option that uses Meta AI to privately and securely summarize unread messages in a chat, so you get an idea of what is…",
+      "Votes are encrypted and stored on the blockchain, preventing unauthorized access or modification at any stage.",
+    icon: <ShieldCheck className="w-6 h-6 text-green-600" />,
   },
   {
     id: 3,
-    title: "Enhanced Security Features for Better Privacy",
+    title: "Transparent Yet Private",
     description:
-      "New end-to-end encryption improvements and privacy controls to keep your conversations more secure than ever before.",
+      "Every vote is recorded publicly on the blockchain, but your identity remains anonymous to maintain voter privacy.",
+    icon: <Vote className="w-6 h-6 text-green-600" />,
   },
 ]
 
@@ -27,14 +29,14 @@ export function StayUpToDate() {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % Math.max(1, newsCards.length - 1))
+    setCurrentIndex((prev) => (prev + 1) % Math.max(1, updateCards.length - 1))
   }
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + Math.max(1, newsCards.length - 1)) % Math.max(1, newsCards.length - 1))
+    setCurrentIndex((prev) => (prev - 1 + Math.max(1, updateCards.length - 1)) % Math.max(1, updateCards.length - 1))
   }
 
-  const visibleCards = newsCards.slice(currentIndex, currentIndex + 2)
+  const visibleCards = updateCards.slice(currentIndex, currentIndex + 2)
 
   return (
     <section className="w-full bg-green-100 py-16 px-4 md:px-8">
@@ -43,9 +45,11 @@ export function StayUpToDate() {
           {/* Left Side - Heading & Description */}
           <div className="space-y-6">
             <div className="space-y-4">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight">Stay up to date</h2>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight">
+                Stay up to date
+              </h2>
               <p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-md">
-                Get the latest from WhatsApp: news, useful tips, and our newest features to help you stay connected.
+                Learn about the latest security, privacy, and transparency measures that make blockchain voting safe and reliable.
               </p>
             </div>
 
@@ -61,7 +65,7 @@ export function StayUpToDate() {
               <button
                 className="w-12 h-12 rounded-full border-2 border-black bg-transparent hover:bg-black hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 onClick={nextSlide}
-                disabled={currentIndex >= newsCards.length - 2}
+                disabled={currentIndex >= updateCards.length - 2}
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -77,9 +81,9 @@ export function StayUpToDate() {
                   className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow duration-200 border-0 w-full"
                 >
                   <div className="space-y-4">
-                    {/* WhatsApp Icon */}
+                    {/* Icon */}
                     <div className="w-8 h-8 flex items-center justify-center">
-                      <LockKeyhole />
+                      {card.icon}
                     </div>
 
                     {/* Title */}
@@ -99,7 +103,7 @@ export function StayUpToDate() {
 
             {/* Mobile Navigation Dots */}
             <div className="flex justify-center gap-2 md:hidden">
-              {Array.from({ length: Math.max(1, newsCards.length - 1) }).map((_, index) => (
+              {Array.from({ length: Math.max(1, updateCards.length - 1) }).map((_, index) => (
                 <button
                   key={index}
                   className={`w-2 h-2 rounded-full transition-colors ${
@@ -115,6 +119,5 @@ export function StayUpToDate() {
     </section>
   )
 }
-
 
 export default StayUpToDate

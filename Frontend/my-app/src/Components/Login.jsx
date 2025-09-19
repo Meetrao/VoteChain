@@ -3,18 +3,17 @@ import { useNavigate } from "react-router-dom";
 import FaceCaptureMulti from "./FaceCapture";
 import axios from "axios";
 import { ADMIN_WALLET } from "../constants.JS";
-import { Loader2, User, Lock, Smartphone, Camera } from "lucide-react";
+import { Loader2, User, Lock, Camera } from "lucide-react";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.withCredentials = true;
 
 export default function Login() {
   const navigate = useNavigate();
-  const [method, setMethod] = useState("password"); // password | face | otp | otp-verify
+  const [method, setMethod] = useState("password"); // password | face
   const [form, setForm] = useState({
     voter_id: "",
     password: "",
-    otp: "",
   });
   const [faceEmbedding, setFaceEmbedding] = useState(null);
   const [showFace, setShowFace] = useState(false);
@@ -48,16 +47,11 @@ export default function Login() {
           voter_id: form.voter_id,
           face_embedding: faceEmbedding,
         });
-      } else if (method === "otp-verify") {
-        res = await axios.post("/auth/login/otp/verify", {
-          voter_id: form.voter_id,
-          otp: form.otp,
-        });
       }
 
       const data = res.data;
 
-      setMessage("✅ " + (data.message || "Login successful. You are whitelisted and logged in successfully."));
+      setMessage("✅ " + data.message);
       localStorage.setItem("currentUser", JSON.stringify(data.user));
 
       const isAdmin =
@@ -71,36 +65,15 @@ export default function Login() {
         }
       }, 1500);
     } catch (error) {
-      if (error.response?.status === 403) {
-        setMessage("❌ You are not whitelisted. Registration automatically whitelists you—please register first or contact support.");
-      } else {
-        setMessage("❌ " + (error.response?.data?.message || error.message));
-      }
+      setMessage("❌ " + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRequestOTP = async () => {
-    if (!form.voter_id?.trim()) {
-      setMessage("❌ Enter your Voter ID before requesting OTP");
-      return;
-    }
-    try {
-      setMessage("Sending OTP...");
-      await axios.post("/auth/login/otp/request", {
-        voter_id: form.voter_id,
-      });
-      setMessage("📲 OTP sent to your registered phone");
-      setMethod("otp-verify");
-    } catch (error) {
-      setMessage("❌ " + (error.response?.data?.message || error.message));
-    }
-  };
-
   const handleFaceCaptured = (embedding) => {
     setFaceEmbedding(embedding);
-    setShowFace(false);
+    setShowFace(false); // This unmounts FaceCaptureMulti and turns off the camera
     setMessage("✅ Face captured, ready to login");
   };
 
@@ -141,7 +114,7 @@ export default function Login() {
 
           <div className="p-6">
             {/* Method Tabs */}
-            <div className="grid grid-cols-3 bg-gray-100 rounded-3xl p-2">
+            <div className="grid grid-cols-2 bg-gray-100 rounded-3xl p-2">
               <button
                 onClick={() => setMethod("password")}
                 className={`flex items-center justify-center gap-1 px-3 py-2 text-base font-normal rounded-full transition-colors ${method === "password" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
@@ -157,16 +130,6 @@ export default function Login() {
               >
                 <Camera className="h-4 w-4" />
                 Face
-              </button>
-              <button
-                onClick={() => setMethod("otp")}
-                className={`flex items-center justify-center gap-1 px-3 py-2 text-base font-normal rounded-full transition-colors ${method === "otp" || method === "otp-verify"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-                  }`}
-              >
-                <Smartphone className="h-4 w-4" />
-                OTP
               </button>
             </div>
 
@@ -215,15 +178,15 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setShowFace(true)}
-                    className={`w-full px-4 py-2 text-sm font-medium font-montserrat rounded-full border transition-colors ${faceEmbedding
-                      ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                    className={`w-full px-4 py-3 text-base font-medium font-montserrat rounded-full border transition-colors ${faceEmbedding
+                      ? "bg-white text-black border-gray-200 hover:bg-black hover:text-white"
                       : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                       }`}
                   >
                     {faceEmbedding ? "Face Captured ✅" : "Capture Face"}
                   </button>
                   {showFace && (
-                    <div className="mt-3">
+                    <div className="mt-3 ml-5">
                       <FaceCaptureMulti
                         frameCount={5}
                         interval={400}
@@ -234,37 +197,6 @@ export default function Login() {
                 </div>
               )}
 
-              {/* OTP Request */}
-              {method === "otp" && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium font-montserrat text-gray-700">One-Time Password</label>
-                  <button
-                    type="button"
-                    onClick={handleRequestOTP}
-                    className="w-full px-4 py-2 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                  >
-                    Request OTP
-                  </button>
-                </div>
-              )}
-
-              {/* OTP Verify */}
-              {method === "otp-verify" && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium font-montserrat text-gray-700">Enter OTP</label>
-                  <input
-                    type="text"
-                    name="otp"
-                    placeholder="Enter 6-digit OTP"
-                    value={form.otp}
-                    onChange={handleChange}
-                    maxLength={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-              )}
-
               <button
                 type="submit"
                 disabled={loading}
@@ -272,7 +204,7 @@ export default function Login() {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 " />
                     Logging in...
                   </>
                 ) : (

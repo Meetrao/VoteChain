@@ -75,13 +75,20 @@ export default function FaceCaptureMulti({ frameCount = 5, interval = 400, onCap
     if (onCaptureComplete) {
       onCaptureComplete(averaged);
     }
+
+    // 🚩 Stop the camera after capturing
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+      setReady(false);
+    }
   };
 
   return (
     <div style={{ padding: 20 }}>
       <video ref={videoRef} autoPlay muted playsInline style={{ width: 320, height: 240 }} />
       <div style={{ marginTop: 10 }}>
-        <button onClick={captureAndLog} disabled={!ready}>
+        <button className="border border-gray-200 rounded-full px-20 py-3 text-sm" onClick={captureAndLog} disabled={!ready}>
           Capture Face Embedding
         </button>
       </div>

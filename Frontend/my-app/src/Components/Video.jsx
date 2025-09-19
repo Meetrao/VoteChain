@@ -9,7 +9,7 @@ const WebioInterface = () => {
         <div className="flex items-center justify-between p-6 bg-white">
           <div className="flex items-center space-x-4">
             <div className="flex flex-col">
-              <h1 className="text-5xl font-bold text-black">
+              <h1 className="text-6xl font-bold text-black text-center">
                 Engagement & Nurture Marketing Strategy
               </h1>
               <p className="text-base pt-4 text-slate-500">
@@ -22,13 +22,23 @@ const WebioInterface = () => {
        {/* Video Container */}
 <div className="p-6">
   <div className="h-[650px] bg-gray-100 rounded-t-3xl flex items-center justify-center relative overflow-hidden">
-    <p className="text-white text-lg"></p>
+     <video
+                src="https://res.cloudinary.com/dcnt7n5bo/video/upload/v1758318230/HackCelestial_Smooth_Operators_dckq2v.mp4"
+                autoPlay
+                loop
+                muted
+                className="w-full h-full object-cover border-8 border-t-green-600 border-x-green-600  rounded-t-3xl"
+              />
   </div>
 
   {/* Paragraph under video */}
   <div className="mt-6">
     <p className="text-slate-600 text-lg leading-relaxed">
-     Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae consequuntur quibusdam sint a, neque quidem provident, amet illo placeat fugiat, officiis quisquam delectus incidunt commodi? Dolorum libero aspernatur recusandae molestias sed cum odio blanditiis magni est, tempore quaerat modi aperiam?
+     This tutorial will guide you through the voting process. Please watch
+          the video carefully to understand how to log in, cast your vote, and
+          confirm submission. Once familiar, you can proceed to vote with
+          confidence. Remember, each member is allowed only one vote per
+          election.
     </p>
   </div>
 </div>
