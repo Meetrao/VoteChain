@@ -265,10 +265,6 @@ export const castVote = async (req, res) => {
       return res.status(404).json({ message: "Candidate not found or not confirmed for this election" });
     }
 
-    const isWhitelisted = await blockchain.checkWhitelist(voterWalletAddress);
-    if (!isWhitelisted) {
-      return res.status(403).json({ message: "Your wallet is not whitelisted to vote." });
-    }
 
     const tx = await blockchain.vote(candidateWalletAddress);
     const receipt = await tx.wait();

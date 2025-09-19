@@ -152,48 +152,6 @@ const getCurrentCandidatesWithVotes = async () => {
   }
 };
 
-// --- Whitelist Functions ---
-const checkWhitelist = async (electionId, userWalletAddress) => {
-  try {
-    return await votingContractRead.isWhitelisted(electionId, userWalletAddress);
-  } catch (error) {
-    console.error("Error in checkWhitelist:", error);
-    return false; // Return false if whitelist check fails
-  }
-};
-
-const whiteListVoter = async (userWalletAddress) => {
-  try {
-    const tx = await votingContractWrite.whitelistVoter(userWalletAddress, { gasLimit: 500000 });
-    const receipt = await tx.wait();
-    return { success: true, transaction: receipt };
-  } catch (error) {
-    console.error("Error in whiteListVoter:", error);
-    throw error;
-  }
-};
-
-const whiteListMultipleVoters = async (voterAddresses) => {
-  try {
-    const tx = await votingContractWrite.whitelistVoters(voterAddresses, { gasLimit: 1000000 });
-    const receipt = await tx.wait();
-    return { success: true, transaction: receipt };
-  } catch (error) {
-    console.error("Error in whiteListMultipleVoters:", error);
-    throw error;
-  }
-};
-
-const removeWhitelistedVoter = async (userWalletAddress) => {
-  try {
-    const tx = await votingContractWrite.removeWhitelistedVoter(userWalletAddress, { gasLimit: 500000 });
-    const receipt = await tx.wait();
-    return { success: true, transaction: receipt };
-  } catch (error) {
-    console.error("Error in removeWhitelistedVoter:", error);
-    throw error;
-  }
-};
 
 export default {
   // Election management
@@ -214,11 +172,5 @@ export default {
   getCandidates,
   getAllCandidatesWithVotes,
   getCurrentCandidates,
-  getCurrentCandidatesWithVotes,
-
-  // Whitelist management
-  checkWhitelist,
-  whiteListVoter,
-  whiteListMultipleVoters,
-  removeWhitelistedVoter
+  getCurrentCandidatesWithVotes
 };

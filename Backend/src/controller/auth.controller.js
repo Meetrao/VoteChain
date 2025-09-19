@@ -8,20 +8,6 @@ import blockchain from "../utils/blockchain.js";
 import { NODE_ENV } from "../constants.js";
 import { THRESHOLD } from "../constants.js";
 
-// Helper function to check if user is whitelisted
-const checkUserWhitelist = async (userWalletAddress) => {
-  try {
-    const currentElectionId = await blockchain.getCurrentElectionId();
-    const isWhitelisted = await blockchain.checkWhitelist(currentElectionId, userWalletAddress);
-    return {
-      isWhitelisted,
-      message: isWhitelisted ? "User is whitelisted" : "User is not whitelisted"
-    };
-  } catch (error) {
-    console.error("Whitelist check error:", error);
-    return { isWhitelisted: false, message: "Whitelist check failed" };
-  }
-};
 
 export const register = async (req, res) => {
   try {
@@ -51,14 +37,6 @@ export const register = async (req, res) => {
     });
     await user.save();
 
-    // Always whitelist the voter on the blockchain after registration
-    try {
-      await blockchain.whiteListVoter(userWalletAddress);
-      console.log(`✅ User ${userWalletAddress} whitelisted successfully`);
-    } catch (blockchainError) {
-      console.error("⚠️ Blockchain whitelist error (user still registered):", blockchainError.message);
-      // Don't fail registration if whitelist fails
-    }
 
     // Generate JWT token
     const token = jwtUtil.generateAccessToken({
@@ -109,11 +87,6 @@ export const faceLoginController = async (req, res) => {
     console.log("Face distance:", distance);
 
     if (distance <= THRESHOLD) {
-      // Check whitelist status
-      const whitelistResult = await checkUserWhitelist(existingUser.userWalletAddress);
-      if (!whitelistResult.isWhitelisted) {
-        return res.status(403).json({ ok: false, message: "User not whitelisted for current election." });
-      }
       const token = jwtUtil.generateAccessToken({
         id: existingUser._id,
         voter_id: existingUser.voter_id,
@@ -158,11 +131,6 @@ export const passwordLogin = async (req, res) => {
       return res.status(401).json({ ok: false, message: "Invalid credentials" });
     }
 
-    // Check whitelist status
-    const whitelistResult = await checkUserWhitelist(user.userWalletAddress);
-    if (!whitelistResult.isWhitelisted) {
-      return res.status(403).json({ ok: false, message: "User not whitelisted for current election." });
-    }
     const token = jwtUtil.generateAccessToken({
       id: user._id,
       voter_id: user.voter_id,
@@ -237,11 +205,6 @@ export const verifyOTPLogin = async (req, res) => {
       return res.status(401).json({ ok: false, message: "Invalid or expired OTP." });
     }
 
-    // Check whitelist status
-    const whitelistResult = await checkUserWhitelist(user.userWalletAddress);
-    if (!whitelistResult.isWhitelisted) {
-      return res.status(403).json({ ok: false, message: "User not whitelisted for current election." });
-    }
     const token = jwtUtil.generateAccessToken({
       id: user._id,
       voter_id: user.voter_id,
