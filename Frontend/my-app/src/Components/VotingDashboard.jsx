@@ -80,7 +80,14 @@ export default function VotingDashboard() {
     }
   };
 
+  const whitelistStatus = JSON.parse(localStorage.getItem("whitelistStatus") || "{}");
+
   const handleVote = async (candidate) => {
+    if (!whitelistStatus.isWhitelisted) {
+      setVotingMessage("❌ You are not whitelisted for this election. Please contact admin.");
+      return;
+    }
+
     try {
       setVotingMessage(`Voting for ${candidate.name}...`);
 
@@ -157,9 +164,8 @@ export default function VotingDashboard() {
                 return (
                   <div
                     key={candidate.candidateWalletAddress || candidate._id}
-                    className={`relative rounded-2xl border p-4 md:p-6 bg-white shadow-sm flex flex-col md:flex-row items-center gap-4 md:gap-6 ${
-                      isWinner ? "border-yellow-300 ring-1 ring-yellow-200" : "border-gray-200"
-                    }`}
+                    className={`relative rounded-2xl border p-4 md:p-6 bg-white shadow-sm flex flex-col md:flex-row items-center gap-4 md:gap-6 ${isWinner ? "border-yellow-300 ring-1 ring-yellow-200" : "border-gray-200"
+                      }`}
                   >
                     {/* Winner badge */}
                     {isWinner && (
@@ -170,9 +176,8 @@ export default function VotingDashboard() {
 
                     {/* Position */}
                     <div
-                      className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-lg md:text-xl font-bold flex-shrink-0 ${
-                        isWinner ? "bg-yellow-300 text-gray-900" : "bg-gray-100 text-gray-600"
-                      }`}
+                      className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-lg md:text-xl font-bold flex-shrink-0 ${isWinner ? "bg-yellow-300 text-gray-900" : "bg-gray-100 text-gray-600"
+                        }`}
                     >
                       #{index + 1}
                     </div>
@@ -182,9 +187,8 @@ export default function VotingDashboard() {
                       <img
                         src={candidate.logo}
                         alt={`${candidate.name} logo`}
-                        className={`w-16 h-16 md:w-20 md:h-20 rounded-full object-cover flex-shrink-0 ${
-                          isWinner ? "ring-2 ring-yellow-300" : "ring-1 ring-gray-200"
-                        }`}
+                        className={`w-16 h-16 md:w-20 md:h-20 rounded-full object-cover flex-shrink-0 ${isWinner ? "ring-2 ring-yellow-300" : "ring-1 ring-gray-200"
+                          }`}
                       />
                     )}
 
@@ -316,13 +320,18 @@ export default function VotingDashboard() {
 
         {votingMessage && (
           <div
-            className={`mb-4 rounded-2xl px-4 py-3 border ${
-              votingMessage.includes("✅")
-                ? "bg-green-50 border-green-200 text-green-800"
-                : "bg-red-50 border-red-200 text-red-800"
-            }`}
+            className={`mb-4 rounded-2xl px-4 py-3 border ${votingMessage.includes("✅")
+              ? "bg-green-50 border-green-200 text-green-800"
+              : "bg-red-50 border-red-200 text-red-800"
+              }`}
           >
             {votingMessage}
+          </div>
+        )}
+
+        {!whitelistStatus.isWhitelisted && (
+          <div className="mb-4 rounded-2xl px-4 py-3 border bg-yellow-50 border-yellow-200 text-yellow-800">
+            You are not whitelisted for this election. You can view candidates and results, but cannot vote.
           </div>
         )}
 

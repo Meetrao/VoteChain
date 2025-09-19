@@ -101,13 +101,16 @@ export default function Register() {
         ...form,
         face_embedding: faceEmbedding,
       });
-      setResult(res.data);
+      setResult({
+        ...res.data,
+        message: (res.data.message || "Registered successfully.") + " You have been whitelisted and registered successfully."
+      });
 
       // Redirect to Voting Dashboard on success (2xx/201)
       if (res.status >= 200 && res.status < 300) {
         setTimeout(() => {
           navigate("/VotingDashboard");
-        }, 1000);
+        }, 1500);
       }
     } catch (error) {
       setResult({

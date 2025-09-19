@@ -3,9 +3,25 @@ import User from "../model/user.model.js";
 import { sendOTP, verifyOTP } from "../utils/otpUtils.js";
 import jwtUtil from "../utils/jwt.js";
 import { euclideanDistance } from "../utils/face-api.js";
+import blockchain from "../utils/blockchain.js";
 
 import { NODE_ENV } from "../constants.js";
 import { THRESHOLD } from "../constants.js";
+
+// Helper function to check if user is whitelisted
+const checkUserWhitelist = async (userWalletAddress) => {
+  try {
+    const currentElectionId = await blockchain.getCurrentElectionId();
+    const isWhitelisted = await blockchain.checkWhitelist(currentElectionId, userWalletAddress);
+    return {
+      isWhitelisted,
+      message: isWhitelisted ? "User is whitelisted" : "User is not whitelisted"
+    };
+  } catch (error) {
+    console.error("Whitelist check error:", error);
+    return { isWhitelisted: false, message: "Whitelist check failed" };
+  }
+};
 
 export const register = async (req, res) => {
   try {
@@ -34,6 +50,15 @@ export const register = async (req, res) => {
       userWalletAddress,
     });
     await user.save();
+
+    // Always whitelist the voter on the blockchain after registration
+    try {
+      await blockchain.whiteListVoter(userWalletAddress);
+      console.log(`✅ User ${userWalletAddress} whitelisted successfully`);
+    } catch (blockchainError) {
+      console.error("⚠️ Blockchain whitelist error (user still registered):", blockchainError.message);
+      // Don't fail registration if whitelist fails
+    }
 
     // Generate JWT token
     const token = jwtUtil.generateAccessToken({
@@ -84,24 +109,27 @@ export const faceLoginController = async (req, res) => {
     console.log("Face distance:", distance);
 
     if (distance <= THRESHOLD) {
+      // Check whitelist status
+      const whitelistResult = await checkUserWhitelist(existingUser.userWalletAddress);
+      if (!whitelistResult.isWhitelisted) {
+        return res.status(403).json({ ok: false, message: "User not whitelisted for current election." });
+      }
       const token = jwtUtil.generateAccessToken({
         id: existingUser._id,
         voter_id: existingUser.voter_id,
         userWalletAddress: existingUser.userWalletAddress,
       });
-
       res.cookie("token", token, {
         httpOnly: true,
         secure: NODE_ENV === "production",
         sameSite: "Strict",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-
       const userInfo = await User.findById(existingUser._id).select("-password");
       return res.json({
         ok: true,
         message: "Login successful",
-        user: userInfo,
+        user: userInfo
       });
     } else {
       return res.status(401).json({ ok: false, message: "Face does not match. Try again." });
@@ -130,21 +158,28 @@ export const passwordLogin = async (req, res) => {
       return res.status(401).json({ ok: false, message: "Invalid credentials" });
     }
 
+    // Check whitelist status
+    const whitelistResult = await checkUserWhitelist(user.userWalletAddress);
+    if (!whitelistResult.isWhitelisted) {
+      return res.status(403).json({ ok: false, message: "User not whitelisted for current election." });
+    }
     const token = jwtUtil.generateAccessToken({
       id: user._id,
       voter_id: user.voter_id,
       userWalletAddress: user.userWalletAddress,
     });
-
     res.cookie("token", token, {
       httpOnly: true,
       secure: NODE_ENV === "production",
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
     const userInfo = await User.findById(user._id).select("-password");
-    return res.status(200).json({ ok: true, message: "Login successful", user: userInfo });
+    return res.status(200).json({
+      ok: true,
+      message: "Login successful",
+      user: userInfo
+    });
   } catch (error) {
     console.error("Password login error:", error);
     res.status(500).json({ ok: false, message: "Login failed." });
@@ -202,21 +237,28 @@ export const verifyOTPLogin = async (req, res) => {
       return res.status(401).json({ ok: false, message: "Invalid or expired OTP." });
     }
 
+    // Check whitelist status
+    const whitelistResult = await checkUserWhitelist(user.userWalletAddress);
+    if (!whitelistResult.isWhitelisted) {
+      return res.status(403).json({ ok: false, message: "User not whitelisted for current election." });
+    }
     const token = jwtUtil.generateAccessToken({
       id: user._id,
       voter_id: user.voter_id,
       userWalletAddress: user.userWalletAddress,
     });
-
     res.cookie("token", token, {
       httpOnly: true,
       secure: NODE_ENV === "production",
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
     const userInfo = await User.findById(user._id).select("-password");
-    return res.status(200).json({ ok: true, message: "Login successful", user: userInfo });
+    return res.status(200).json({
+      ok: true,
+      message: "Login successful",
+      user: userInfo
+    });
   } catch (error) {
     console.error("OTP verification error:", error);
     res.status(500).json({ ok: false, message: "OTP verification failed." });

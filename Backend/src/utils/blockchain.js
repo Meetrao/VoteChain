@@ -26,13 +26,13 @@ const createElection = async () => {
   try {
     const tx = await votingContractWrite.createElection();
     const receipt = await tx.wait();
-    
+
     // Get the new election ID from events or contract
     const currentElectionId = await votingContractRead.currentElectionId();
-    
-    return { 
+
+    return {
       electionId: currentElectionId.toNumber ? currentElectionId.toNumber() : Number(currentElectionId),
-      receipt 
+      receipt
     };
   } catch (error) {
     console.error("Error in createElection:", error);
@@ -119,8 +119,8 @@ const getCandidates = async (electionId) => {
 const getAllCandidatesWithVotes = async (electionId) => {
   try {
     const [candidates, votes] = await votingContractRead.getAllCandidatesWithVotes(electionId);
-    return { 
-      candidates, 
+    return {
+      candidates,
       votes: votes.map(v => v.toNumber ? v.toNumber() : Number(v))
     };
   } catch (error) {
@@ -142,8 +142,8 @@ const getCurrentCandidates = async () => {
 const getCurrentCandidatesWithVotes = async () => {
   try {
     const [candidates, votes] = await votingContractRead.getCurrentCandidatesWithVotes();
-    return { 
-      candidates, 
+    return {
+      candidates,
       votes: votes.map(v => v.toNumber ? v.toNumber() : Number(v))
     };
   } catch (error) {
@@ -152,23 +152,45 @@ const getCurrentCandidatesWithVotes = async () => {
   }
 };
 
-// --- Whitelist Functions (if your contract has them) ---
-const checkWhitelist = async (userWalletAddress) => {
+// --- Whitelist Functions ---
+const checkWhitelist = async (electionId, userWalletAddress) => {
   try {
-    // Return true if whitelist functions don't exist
-    return true;
+    return await votingContractRead.isWhitelisted(electionId, userWalletAddress);
   } catch (error) {
     console.error("Error in checkWhitelist:", error);
-    return true; // Allow voting if whitelist check fails
+    return false; // Return false if whitelist check fails
   }
 };
 
 const whiteListVoter = async (userWalletAddress) => {
   try {
-    // Placeholder - implement if your contract has whitelist
-    return { success: true };
+    const tx = await votingContractWrite.whitelistVoter(userWalletAddress, { gasLimit: 500000 });
+    const receipt = await tx.wait();
+    return { success: true, transaction: receipt };
   } catch (error) {
     console.error("Error in whiteListVoter:", error);
+    throw error;
+  }
+};
+
+const whiteListMultipleVoters = async (voterAddresses) => {
+  try {
+    const tx = await votingContractWrite.whitelistVoters(voterAddresses, { gasLimit: 1000000 });
+    const receipt = await tx.wait();
+    return { success: true, transaction: receipt };
+  } catch (error) {
+    console.error("Error in whiteListMultipleVoters:", error);
+    throw error;
+  }
+};
+
+const removeWhitelistedVoter = async (userWalletAddress) => {
+  try {
+    const tx = await votingContractWrite.removeWhitelistedVoter(userWalletAddress, { gasLimit: 500000 });
+    const receipt = await tx.wait();
+    return { success: true, transaction: receipt };
+  } catch (error) {
+    console.error("Error in removeWhitelistedVoter:", error);
     throw error;
   }
 };
@@ -179,22 +201,24 @@ export default {
   endElection,
   getCurrentElectionId,
   isCurrentElectionActive,
-  
+
   // Candidate management
   isCandidate,
   registerCandidate,
-  
+
   // Voting
   vote,
   hasVoted,
-  
+
   // Data retrieval
   getCandidates,
   getAllCandidatesWithVotes,
   getCurrentCandidates,
   getCurrentCandidatesWithVotes,
-  
-  // Whitelist (legacy/optional)
+
+  // Whitelist management
   checkWhitelist,
-  whiteListVoter
+  whiteListVoter,
+  whiteListMultipleVoters,
+  removeWhitelistedVoter
 };

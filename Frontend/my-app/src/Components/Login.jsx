@@ -57,7 +57,7 @@ export default function Login() {
 
       const data = res.data;
 
-      setMessage("✅ " + data.message);
+      setMessage("✅ " + (data.message || "Login successful. You are whitelisted and logged in successfully."));
       localStorage.setItem("currentUser", JSON.stringify(data.user));
 
       const isAdmin =
@@ -71,7 +71,11 @@ export default function Login() {
         }
       }, 1500);
     } catch (error) {
-      setMessage("❌ " + (error.response?.data?.message || error.message));
+      if (error.response?.status === 403) {
+        setMessage("❌ You are not whitelisted. Registration automatically whitelists you—please register first or contact support.");
+      } else {
+        setMessage("❌ " + (error.response?.data?.message || error.message));
+      }
     } finally {
       setLoading(false);
     }
