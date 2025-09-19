@@ -21,7 +21,7 @@ const WebioInterface = () => {
 
        {/* Video Container */}
 <div className="p-6">
-  <div className="h-[650px] bg-gray-100 rounded-3xl flex items-center justify-center relative overflow-hidden">
+  <div className="h-[650px] bg-gray-100 rounded-t-3xl flex items-center justify-center relative overflow-hidden">
     <p className="text-white text-lg"></p>
   </div>
 
