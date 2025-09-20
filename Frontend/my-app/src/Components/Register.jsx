@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import FaceCaptureMulti from "./FaceCapture";
 import axios from "axios";
 import { ADMIN_WALLET } from "../constants.JS";
+import VoiceAssistantButtonBasic from "./VoiceAssistantButtonBasic";
+// ...existing imports
 
 export default function Register() {
   const navigate = useNavigate();
@@ -110,7 +112,7 @@ export default function Register() {
         ...form,
         face_embedding: faceEmbedding,
       });
-      setResult(res.data);
+      setResult({ ...res.data, ok: res.status >= 200 && res.status < 300 });
 
       // Redirect to Voting Dashboard on success (2xx/201)
       if (res.status >= 200 && res.status < 300) {
@@ -145,7 +147,7 @@ export default function Register() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-md">
           {/* Back button */}
-          <div className="mb-4">
+          <div className="mb-4 flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate("/")}
@@ -153,6 +155,9 @@ export default function Register() {
             >
               ← Back to Home
             </button>
+            <div>
+              <VoiceAssistantButtonBasic />
+            </div>
           </div>
 
           <div className="bg-white rounded-3xl border border-black/10 p-8 shadow-xl">
@@ -170,6 +175,7 @@ export default function Register() {
               <div>
                 <button
                   type="button"
+                  data-command="connect wallet"
                   onClick={connectWallet}
                   className="w-full py-3 rounded-full bg-black hover:bg-gray-900 text-white font-medium transition-colors"
                 >
@@ -228,6 +234,7 @@ export default function Register() {
                   />
                   <button
                     type="button"
+                    data-command="verify voter"
                     onClick={handleVerifyVoterId}
                     disabled={verifyingVoter}
                     className="px-4 py-2 rounded-full bg-black hover:bg-gray-900 text-white font-medium disabled:opacity-60"
@@ -272,6 +279,7 @@ export default function Register() {
               <div className="text-center">
                 <button
                   type="button"
+                  data-command="capture face"
                   onClick={() => setShowFace(true)}
                   className="w-full bg-black hover:bg-gray-900 text-white py-3 rounded-full font-medium transition-colors mb-4"
                 >
@@ -293,6 +301,7 @@ export default function Register() {
               {/* Submit */}
               <button
                 type="submit"
+                data-command="submit registration"
                 disabled={loading}
                 className="w-full bg-black hover:bg-gray-900 disabled:bg-gray-400 text-white py-3 rounded-full font-medium transition-colors"
               >
@@ -308,12 +317,18 @@ export default function Register() {
                 >
                   {result.message}
                   {result?.data?.txHash && <div className="mt-1">Tx: {result.data.txHash}</div>}
+                  {result?.mockVoterValid === false && (
+                    <div className="mt-2 text-xs bg-yellow-50 text-yellow-800 inline-block px-3 py-1 rounded-full">
+                      Note: Voter ID not found in the official registry.
+                    </div>
+                  )}
                 </div>
               )}
             </form>
           </div>
         </div>
       </div>
+
     </div>
   );
 }

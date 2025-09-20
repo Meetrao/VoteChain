@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FaceCaptureMulti from "./FaceCapture";
+import VoiceAssistantButtonBasic from "./VoiceAssistantButtonBasic";
 import axios from "axios";
 import { ADMIN_WALLET } from "../constants.JS";
 import { Loader2, User, Lock, Camera } from "lucide-react";
@@ -101,6 +102,9 @@ export default function Login() {
             >
               ← Back to Home
             </button>
+            <div>
+              <VoiceAssistantButtonBasic />
+            </div>
           </div>
 
           <div className="px-6 text-center">
@@ -117,6 +121,7 @@ export default function Login() {
             <div className="grid grid-cols-2 bg-gray-100 rounded-3xl p-2">
               <button
                 onClick={() => setMethod("password")}
+                data-command="use password"
                 className={`flex items-center justify-center gap-1 px-3 py-2 text-base font-normal rounded-full transition-colors ${method === "password" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
                   }`}
               >
@@ -125,6 +130,7 @@ export default function Login() {
               </button>
               <button
                 onClick={() => setMethod("face")}
+                data-command="use face"
                 className={`flex items-center justify-center gap-1 px-3 py-2 text-base font-normal rounded-full transition-colors ${method === "face" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
                   }`}
               >
@@ -177,6 +183,7 @@ export default function Login() {
                   <label className="text-sm font-medium text-gray-700">Face Recognition</label>
                   <button
                     type="button"
+                    data-command="capture face"
                     onClick={() => setShowFace(true)}
                     className={`w-full px-4 py-3 text-base font-medium font-montserrat rounded-full border transition-colors ${faceEmbedding
                       ? "bg-white text-black border-gray-200 hover:bg-black hover:text-white"
@@ -199,6 +206,7 @@ export default function Login() {
 
               <button
                 type="submit"
+                data-command="login submit"
                 disabled={loading}
                 className="w-full px-4 py-4 bg-black text-white font-montserrat font-medium rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-gray-900 flex items-center justify-center"
               >

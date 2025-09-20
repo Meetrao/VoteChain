@@ -3,6 +3,7 @@ import User from "../model/user.model.js";
 import { sendOTP, verifyOTP } from "../utils/otpUtils.js";
 import jwtUtil from "../utils/jwt.js";
 import { euclideanDistance } from "../utils/face-api.js";
+import MockVoter from "../model/mockVoterId.model.js";
 
 import { NODE_ENV } from "../constants.js";
 import { THRESHOLD } from "../constants.js";
@@ -13,6 +14,16 @@ export const register = async (req, res) => {
     const { name, email, password, voter_id, phone_number, face_embedding, userWalletAddress } = req.body;
     if (!name || !email || !password || !voter_id || !phone_number || !face_embedding || !userWalletAddress) {
       return res.status(400).json({ message: "All fields are required, including face embedding and wallet address." });
+    }
+
+    // Check mock voter registry for the provided voter_id (non-blocking)
+    let mockVoterValid = false;
+    try {
+      const mv = await MockVoter.findOne({ voterId: String(voter_id).trim().toUpperCase() });
+      mockVoterValid = !!mv;
+      if (!mockVoterValid) console.warn(`[register] voter_id ${voter_id} not found in MockVoter registry`);
+    } catch (err) {
+      console.error('[register] mock voter lookup failed', err?.message || err);
     }
 
     // Check if user already exists
@@ -52,9 +63,13 @@ export const register = async (req, res) => {
     });
 
     const createdUser = await User.findById(user._id).select("-password");
+    const responseMessage = mockVoterValid
+      ? "User registered successfully."
+      : "User registered successfully. Note: Voter ID not found in the official registry.";
     return res.status(201).json({
-      message: "User registered successfully.",
+      message: responseMessage,
       user: createdUser,
+      mockVoterValid,
     });
   } catch (error) {
     res.status(500).json({ message: "Registration failed.", error: error.message });
