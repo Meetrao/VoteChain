@@ -1,99 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from 'react-router-dom';
 import { Clipboard, Wallet, Vote } from 'lucide-react';
 
-const memberData = [
-  {
-    id: 1,
-    name: "Edgar Rivera",
-    company: "Fishermen Labs",
-    plan: "Office Member",
-    price: "$79.00",
-    paymentMethod: "Credit Card",
-    status: "Confirmed",
-    avatar: "/professional-man-avatar.png",
-  },
-  {
-    id: 2,
-    name: "Priya Bollam",
-    company: "Airbnb",
-    plan: "Part-Time",
-    price: "$79.00",
-    paymentMethod: "Credit Card",
-    status: "Confirmed",
-    avatar: "/professional-woman-avatar.png",
-    highlighted: true,
-  },
-  {
-    id: 3,
-    name: "Edna Lee",
-    company: "Spotify",
-    plan: "Part-Time",
-    price: "$79.00",
-    paymentMethod: "Credit Card",
-    status: "Not Connected",
-    avatar: "/professional-woman-avatar-2.png",
-  },
-  {
-    id: 4,
-    name: "Kelly Bates",
-    company: "Simply New",
-    plan: "Part-Time",
-    price: "$79.00",
-    paymentMethod: "Credit Card",
-    status: "Confirmed",
-    avatar: "/professional-woman-avatar-3.jpg",
-  },
-  {
-    id: 5,
-    name: "Glen Woods",
-    company: "Knife and Fox",
-    plan: "Office Member",
-    price: "$79.00",
-    paymentMethod: "Credit Card",
-    status: "Confirmed",
-    avatar: "/professional-man-avatar-2.png",
-  },
-  {
-    id: 6,
-    name: "Diana Flores",
-    company: "Evergreen",
-    plan: "Full-Time",
-    price: "$79.00",
-    paymentMethod: "Credit Card",
-    status: "Confirmed",
-    avatar: "/professional-woman-avatar-4.jpg",
-  },
-  {
-    id: 7,
-    name: "Karla Rodriguez",
-    company: "Airbnb",
-    plan: "Full-Time",
-    price: "$79.00",
-    paymentMethod: "Credit Card",
-    status: "Confirmed",
-    avatar: "/professional-woman-avatar-5.jpg",
-  },
-  {
-    id: 8,
-    name: "Nathan Smith",
-    company: "Spotify",
-    plan: "Office Member",
-    price: "$79.00",
-    paymentMethod: "Credit Card",
-    status: "Confirmed",
-    avatar: "/professional-man-avatar-3.jpg",
-  },
-];
-
+// Dynamic data from backend
 export function MemberAdminDashboard() {
   const [hoveredRow, setHoveredRow] = useState(null);
+  const [voters, setVoters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchVoters = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/voting/voters");
+        setVoters(response.data.voters || response.data || []);
+      } catch (err) {
+        setError("Failed to fetch voters");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVoters();
+  }, []);
 
   const sidebarItems = [
-    { icon: Clipboard, label: "Dashboard", route: "/dashboard", active: false },
+    { icon: Clipboard, label: "Dashboard", route: "/admin", active: false },
     { icon: Wallet, label: "Elections", route: "/election", active: false },
-    { icon: Vote, label: "Voters", route: "/voters", active: true }, // Voters page active
-    // Add more items as needed
+    { icon: Vote, label: "Voters", route: "/voters", active: true },
   ];
 
   return (
@@ -103,15 +37,12 @@ export function MemberAdminDashboard() {
         <div className="flex items-center gap-3 mb-8">
           <span className="text-4xl font-Bold text-white">VoteChain</span>
         </div>
-
         <nav className="space-y-2">
           {sidebarItems.map((item, index) => (
             <Link
               to={item.route}
               key={index}
-              className={`flex items-center gap-3 px-3 py-3 rounded-full cursor-pointer transition-colors ${
-                item.active ? "bg-green-700 text-white" : "text-green-100 hover:text-white hover:bg-green-700"
-              }`}
+              className={`flex items-center gap-3 px-3 py-3 rounded-full cursor-pointer transition-colors ${item.active ? "bg-green-700 text-white" : "text-green-100 hover:text-white hover:bg-green-700"}`}
             >
               <item.icon className="w-5 h-5" />
               <span className="text-base">{item.label}</span>
@@ -119,81 +50,49 @@ export function MemberAdminDashboard() {
           ))}
         </nav>
       </div>
-
       <div className="flex h-screen bg-white ml-64">
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
           <div className="bg-white px-8 py-6">
             <div className="flex items-center justify-between">
-              <h1 className="text-5xl font-bold text-gray-900">Members List</h1>
+              <h1 className="text-5xl font-bold text-gray-900">Voters List</h1>
             </div>
           </div>
-
           {/* Content Area */}
           <div className="flex-1 px-8">
             <div className="bg-white shadow-sm rounded-3xl border border-gray-200">
               <div className="p-6">
                 {/* Table Header */}
                 <div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-200 text-sm font-medium text-gray-500">
-                  <div className="col-span-3">Name </div>
-                  <div className="col-span-2">Status</div>
-                  <div className="col-span-3"></div>
+                  <div className="col-span-3">Name</div>
+                  <div className="col-span-3">Email</div>
+                  <div className="col-span-2">Voter ID</div>
+                  <div className="col-span-4 text-right pr-6">Phone</div>
                 </div>
-
                 {/* Table Rows */}
                 <div className="space-y-0">
-                  {memberData.map((member) => (
-                    <div
-                      key={member.id}
-                      className={`grid grid-cols-12 gap-4 py-4 border-b border-gray-100 last:border-b-0 transition-colors hover:bg-green-50 ${
-                        member.highlighted
-                      }`}
-                      onMouseEnter={() => setHoveredRow(member.id)}
-                      onMouseLeave={() => setHoveredRow(null)}
-                    >
-                      {/* Name */}
-                      <div className="col-span-3 flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                          <img
-                            src={member.avatar || "/placeholder.svg"}
-                            alt={member.name}
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              const target = e.target;
-                              target.style.display = "none";
-                              const fallback = target.nextElementSibling;
-                              if (fallback) fallback.style.display = "flex";
-                            }}
-                          />
-                          <div
-                            className="h-full w-full bg-gray-200 text-gray-600 text-xs font-medium flex items-center justify-center"
-                            style={{ display: "none" }}
-                          >
-                            {member.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </div>
+                  {loading ? (
+                    <div className="py-8 text-center text-gray-500">Loading voters...</div>
+                  ) : error ? (
+                    <div className="py-8 text-center text-red-500">{error}</div>
+                  ) : voters.length === 0 ? (
+                    <div className="py-8 text-center text-gray-500">No voters found.</div>
+                  ) : (
+                    voters.filter(voter => voter.name?.toLowerCase() !== "admin").map((voter) => (
+                      <div
+                        key={voter._id || voter.id}
+                        className="grid grid-cols-12 gap-4 py-4 border-b border-gray-100 last:border-b-0 transition-colors hover:bg-green-50"
+                      >
+                        <div className="col-span-3 flex items-center gap-3">
+                          <div className="font-semibold text-gray-900">{voter.name}</div>
                         </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">{member.name}</div>
-                        </div>
+                        <div className="col-span-3">{voter.email}</div>
+                        <div className="col-span-2">{voter.voter_id}</div>
+                        <div className="col-span-4 text-right pr-6">{voter.phone_number}</div>
                       </div>
-                      {/* Status */}
-                      <div className="col-span-2 flex items-center">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            member.status === "Voted"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}
-                        >
-                          {member.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             </div>

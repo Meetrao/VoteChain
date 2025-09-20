@@ -9,7 +9,19 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import axios from "axios"
 
+
 export default function IntegratedHomePage() {
+  const [fontSize, setFontSize] = useState(16); // default font size in px
+
+  // Apply font size globally to <html>
+  useEffect(() => {
+    document.documentElement.style.fontSize = fontSize + "px";
+  }, [fontSize]);
+
+  const increaseFont = () => setFontSize((prev) => prev + 2);
+  const decreaseFont = () => setFontSize((prev) => (prev > 10 ? prev - 2 : prev));
+
+
   const [phase, setPhase] = useState("Loading...")
   const [title, setTitle] = useState("")
 
@@ -40,6 +52,28 @@ export default function IntegratedHomePage() {
 
   const isRegistration = phase === "registration"
 
+  const [language, setLanguage] = useState("en-US");
+
+  const toggleReadAloud = () => {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    } else {
+      const textElements = document.querySelectorAll(
+        "h1, h2, h3, h4, h5, h6, p, span, li"
+      );
+      let fullText = "";
+      textElements.forEach((el) => (fullText += el.innerText + " "));
+      if (!fullText) return;
+
+      const utterance = new SpeechSynthesisUtterance(fullText);
+      utterance.lang = language;
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
   return (
     <>
       <nav className="w-full bg-white px-4 py-3">
@@ -66,9 +100,33 @@ export default function IntegratedHomePage() {
           <div className="flex items-center gap-4 md:gap-6">
             {/* Language Toggle */}
             <div className="flex items-center gap-3 text-sm md:text-base">
-              <button className="text-gray-700 hover:text-gray-900 font-medium transition-colors">English</button>
+              <button
+                onClick={() => {
+                  const select = document.querySelector(".goog-te-combo");
+                  if (select) {
+                    select.value = "en";
+                    select.dispatchEvent(new Event("change"));
+                  }
+                }}
+                className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+              >
+                English
+              </button>
+
               <div className="w-px h-4 bg-gray-300"></div>
-              <button className="text-gray-700 hover:text-gray-900 font-medium transition-colors">हिंदी</button>
+
+              <button
+                onClick={() => {
+                  const select = document.querySelector(".goog-te-combo");
+                  if (select) {
+                    select.value = "hi";
+                    select.dispatchEvent(new Event("change"));
+                  }
+                }}
+                className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+              >
+                हिंदी
+              </button>
             </div>
 
             <Link to="/login">
@@ -84,6 +142,28 @@ export default function IntegratedHomePage() {
                 </button>
               </Link>
             )}
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={decreaseFont}
+                className="px-3 py-2 border rounded-full hover:bg-gray-100"
+              >
+                A-
+              </button>
+              <button
+                onClick={increaseFont}
+                className="px-3 py-2 border rounded-full hover:bg-gray-100"
+              >
+                A+
+              </button>
+              <button
+                onClick={toggleReadAloud}
+                className="px-4 py-2 bg-white border text-black rounded-full hover:bg-slate-50"
+                title="Read Aloud"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" /><path d="M16 9a5 5 0 0 1 0 6" /><path d="M19.364 18.364a9 9 0 0 0 0-12.728" /></svg>
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -183,12 +263,12 @@ export default function IntegratedHomePage() {
           </div>
         </div>
       </main>
-    <Fourgrid/>
-    <Steps/>
-    <Video/>
-    <Slider/>
-    <Faq/>
-    <Footer/>
+      <Fourgrid />
+      <Steps />
+      <Video />
+      <Slider />
+      <Faq />
+      <Footer />
     </>
   )
 }

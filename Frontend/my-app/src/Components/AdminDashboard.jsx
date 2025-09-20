@@ -184,7 +184,7 @@ export default function AdminDashboard() {
   ]
 
   const sidebarItems = [
-    { icon: Clipboard, label: "Dashboard", route: "/dashboard", active: true },
+    { icon: Clipboard, label: "Dashboard", route: "/admin", active: true },
     { icon: Wallet, label: "Elections", route: "/election" }, // Elections page
     { icon: Vote, label: "Voters", route: "/voters" },         // Voters page
     // Add more items as needed
@@ -251,11 +251,19 @@ export default function AdminDashboard() {
   }
 
   // Determine blockchain status
-  const isAnyElectionEnded = elections.some(e => e.phase === "ended");
-  const blockchainStatus = isAnyElectionEnded ? "Offline" : "Online";
-  const blockchainStatusColor = isAnyElectionEnded ? "text-red-600" : "text-green-600";
-  const blockchainDotColor = isAnyElectionEnded ? "bg-red-500" : "bg-green-500";
-  const blockchainStatusText = isAnyElectionEnded ? "Stopped" : "Running";
+  let blockchainStatus = "Offline";
+  let blockchainStatusColor = "text-red-600";
+  let blockchainDotColor = "bg-red-500";
+  let blockchainStatusText = "Stopped";
+  if (elections.length > 0) {
+    const allEnded = elections.every(e => e.phase === "ended");
+    if (!allEnded) {
+      blockchainStatus = "Online";
+      blockchainStatusColor = "text-green-600";
+      blockchainDotColor = "bg-green-500";
+      blockchainStatusText = "Running";
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white/10 text-gray-800">
@@ -270,9 +278,8 @@ export default function AdminDashboard() {
             <Link
               to={item.route} // Add your route path here, e.g. "/dashboard", "/elections", "/voters"
               key={index}
-              className={`flex items-center gap-3 px-3 py-3  rounded-full cursor-pointer transition-colors ${
-                item.active ? "bg-green-700 text-white" : "text-green-100 hover:text-white hover:bg-green-700"
-              }`}
+              className={`flex items-center gap-3 px-3 py-3  rounded-full cursor-pointer transition-colors ${item.active ? "bg-green-700 text-white" : "text-green-100 hover:text-white hover:bg-green-700"
+                }`}
             >
               <item.icon className="w-5 h-5" />
               <span className="text-base">{item.label}</span>
@@ -416,57 +423,57 @@ export default function AdminDashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
-          {/* Create Election Form */}
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="text-xl font-montserrat font-normal text-gray-800">Create New Election</h3>
+              {/* Create Election Form */}
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100">
+                <div className="p-6 border-b border-gray-100">
+                  <h3 className="text-xl font-montserrat font-normal text-gray-800">Create New Election</h3>
+                </div>
+                <div className="p-6">
+                  <form onSubmit={handleCreateElection} className="space-y-4">
+                    <div>
+                      <label className="text-sm text-gray-600 mb-2 block font-montserrat">Title</label>
+                      <input
+                        name="title"
+                        value={form.title}
+                        onChange={handleChange}
+                        required
+                        disabled={loading}
+                        className="w-full bg-gray-50 text-gray-800 border border-gray-200 rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-600 mb-2 block font-montserrat">Description</label>
+                      <textarea
+                        name="description"
+                        value={form.description}
+                        onChange={handleChange}
+                        required
+                        disabled={loading}
+                        className="w-full bg-gray-50 text-gray-800 border border-gray-200 rounded-2xl px-3 py-2 text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50 resize-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-600 mb-2 block">Start Time</label>
+                      <input
+                        type="datetime-local"
+                        name="startTime"
+                        value={form.startTime}
+                        onChange={handleChange}
+                        required
+                        disabled={loading}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-3xl text-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-green-600 hover:bg-green-700 rounded-3xl text-white px-4 py-2 font-montserrat transition-colors disabled:opacity-50"
+                    >
+                      {loading ? "Creating..." : "Create Election"}
+                    </button>
+                  </form>
+                </div>
               </div>
-              <div className="p-6">
-                <form onSubmit={handleCreateElection} className="space-y-4">
-                  <div>
-                    <label className="text-sm text-gray-600 mb-2 block font-montserrat">Title</label>
-                    <input
-                      name="title"
-                      value={form.title}
-                      onChange={handleChange}
-                      required
-                      disabled={loading}
-                      className="w-full bg-gray-50 text-gray-800 border border-gray-200 rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-600 mb-2 block font-montserrat">Description</label>
-                    <textarea
-                      name="description"
-                      value={form.description}
-                      onChange={handleChange}
-                      required
-                      disabled={loading}
-                      className="w-full bg-gray-50 text-gray-800 border border-gray-200 rounded-2xl px-3 py-2 text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50 resize-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-600 mb-2 block">Start Time</label>
-                    <input
-                      type="datetime-local"
-                      name="startTime"
-                      value={form.startTime}
-                      onChange={handleChange}
-                      required
-                      disabled={loading}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-3xl text-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-green-600 hover:bg-green-700 rounded-3xl text-white px-4 py-2 font-montserrat transition-colors disabled:opacity-50"
-                  >
-                    {loading ? "Creating..." : "Create Election"}
-                  </button>
-                </form>
-              </div>
-            </div>
             </div>
             {/* Current Elections */}
             <div className="bg-white rounded-3xl mb-8 shadow-sm border border-gray-100">
@@ -511,7 +518,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Election History */}
-            
+
           </div>
 
           {/* Right Sidebar */}
