@@ -14,11 +14,13 @@ import {
   checkBlockchainStatus,
   endBlockchainElection,
   debugUser,
-  debugBlockchainVotes
+  debugBlockchainVotes,
+  getAllVoters
 } from "../controller/voting.controller.js";
 
 const router = express.Router();
 
+router.get("/voters", getAllVoters);
 router.post("/create", onlyAdmin, createVoting);
 router.get("/getElection", getElection);
 router.get("/all", listAllElections);

@@ -88,9 +88,9 @@ const registerCandidate = async (candidateWallet) => {
 };
 
 // --- Voting Functions ---
-const vote = async (candidateWallet) => {
+const vote = async (voterWallet, candidateWallet) => {
   try {
-    return await votingContractWrite.vote(candidateWallet);
+    return await votingContractWrite.vote(voterWallet, candidateWallet);
   } catch (error) {
     console.error("Error in vote:", error);
     throw error;

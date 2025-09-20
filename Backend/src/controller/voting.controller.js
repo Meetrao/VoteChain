@@ -1,6 +1,17 @@
+import User from "../model/user.model.js";
 import Voting from "../model/voting.model.js";
 import Candidate from "../model/candidate.model.js";
 import blockchain from "../utils/blockchain.js";
+
+// Get all voters
+export const getAllVoters = async (req, res) => {
+  try {
+    const voters = await User.find({}, "_id name email voter_id phone_number userWalletAddress");
+    res.json({ voters });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch voters", error: error.message });
+  }
+};
 
 //Create a new Election
 export const createVoting = async (req, res) => {
@@ -265,8 +276,22 @@ export const castVote = async (req, res) => {
       return res.status(404).json({ message: "Candidate not found or not confirmed for this election" });
     }
 
+    // --- ADDED: Check if voter has already voted ---
+    const blockchainElectionId = election.blockchainElectionId;
+    console.log("[castVote] electionId:", blockchainElectionId, "voterWalletAddress:", voterWalletAddress);
+    try {
+      const alreadyVoted = await blockchain.hasVoted(blockchainElectionId, voterWalletAddress);
+      console.log("[castVote] hasVoted result:", alreadyVoted);
+      if (alreadyVoted) {
+        return res.status(400).json({ message: "You have already voted in this election." });
+      }
+    } catch (checkError) {
+      console.error("Error checking hasVoted:", checkError);
+      return res.status(500).json({ message: "Failed to check voting status.", error: checkError.message });
+    }
 
-    const tx = await blockchain.vote(candidateWalletAddress);
+    // --- Proceed to vote ---
+    const tx = await blockchain.vote(voterWalletAddress, candidateWalletAddress);
     const receipt = await tx.wait();
 
     if (receipt.status !== 1) {
