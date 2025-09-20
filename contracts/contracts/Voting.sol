@@ -11,8 +11,6 @@ contract Voting is Ownable {
         mapping(address => bool) isCandidate;
         mapping(address => uint256) votesCount;
         mapping(address => bool) hasVoted;
-        // ADD: whitelist
-        mapping(address => bool) isWhitelisted;
     }
 
     uint256 public currentElectionId;
@@ -26,9 +24,7 @@ contract Voting is Ownable {
         address candidate
     );
     event ElectionEnded(uint256 indexed electionId);
-    // ADD: events
-    event VoterWhitelisted(uint256 indexed electionId, address voter);
-    event VoterWhitelistRemoved(uint256 indexed electionId, address voter);
+    // ...existing code...
 
     constructor(address initialOwner) Ownable(initialOwner) {}
 
@@ -66,20 +62,23 @@ contract Voting is Ownable {
         emit CandidateRegistered(currentElectionId, candidateWallet);
     }
 
-    // 🔹 IMPROVEMENT: Add validation and better error messages
-    function vote(address candidateWallet) external {
+    // Voting function: takes voter address and candidate address
+    function vote(
+        address voterWallet,
+        address candidateWallet
+    ) external onlyOwner {
+        require(voterWallet != address(0), "Invalid voter address");
         require(candidateWallet != address(0), "Invalid candidate address");
         require(currentElectionId > 0, "No election created yet");
         Election storage e = elections[currentElectionId];
         require(e.isActive, "No active election");
         require(e.isCandidate[candidateWallet], "Candidate not registered");
-        require(e.isWhitelisted[msg.sender], "Voter not whitelisted"); // <—
-        require(!e.hasVoted[msg.sender], "Already voted");
+        require(!e.hasVoted[voterWallet], "Already voted");
 
         e.votesCount[candidateWallet]++;
-        e.hasVoted[msg.sender] = true;
+        e.hasVoted[voterWallet] = true;
 
-        emit VoteCast(currentElectionId, msg.sender, candidateWallet);
+        emit VoteCast(currentElectionId, voterWallet, candidateWallet);
     }
 
     // 🔹 IMPROVEMENT: Add validation
@@ -160,46 +159,5 @@ contract Voting is Ownable {
         return getAllCandidatesWithVotes(currentElectionId);
     }
 
-    // ADD: whitelist single
-    function whitelistVoter(address voter) external onlyOwner {
-        require(voter != address(0), "Invalid voter");
-        require(currentElectionId > 0, "No election created yet");
-        Election storage e = elections[currentElectionId];
-        require(e.isActive, "No active election");
-        e.isWhitelisted[voter] = true;
-        emit VoterWhitelisted(currentElectionId, voter);
-    }
-
-    // ADD: whitelist many
-    function whitelistVoters(address[] calldata voters) external onlyOwner {
-        require(currentElectionId > 0, "No election created yet");
-        Election storage e = elections[currentElectionId];
-        require(e.isActive, "No active election");
-        for (uint256 i = 0; i < voters.length; i++) {
-            address v = voters[i];
-            if (v != address(0)) {
-                e.isWhitelisted[v] = true;
-                emit VoterWhitelisted(currentElectionId, v);
-            }
-        }
-    }
-
-    // ADD: remove whitelist
-    function removeWhitelistedVoter(address voter) external onlyOwner {
-        require(voter != address(0), "Invalid voter");
-        require(currentElectionId > 0, "No election created yet");
-        Election storage e = elections[currentElectionId];
-        require(e.isActive, "No active election");
-        e.isWhitelisted[voter] = false;
-        emit VoterWhitelistRemoved(currentElectionId, voter);
-    }
-
-    // ADD: view check
-    function isWhitelisted(
-        uint256 electionId,
-        address voter
-    ) external view returns (bool) {
-        if (electionId == 0 || electionId > currentElectionId) return false;
-        return elections[electionId].isWhitelisted[voter];
-    }
+    // ...existing code...
 }
