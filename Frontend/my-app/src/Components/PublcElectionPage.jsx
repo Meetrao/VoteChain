@@ -8,6 +8,7 @@ import Footer from "./Footer"
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import axios from "axios"
+import VoiceAssistantButtonBasic from "./VoiceAssistantButtonBasic"
 
 
 export default function IntegratedHomePage() {
@@ -74,6 +75,17 @@ export default function IntegratedHomePage() {
     }
   };
 
+  // Log browser capabilities for debugging (SpeechRecognition, SpeechSynthesis, Vibration)
+  useEffect(() => {
+    try {
+      console.log("SpeechRecognition:", window.SpeechRecognition || window.webkitSpeechRecognition);
+      console.log("SpeechSynthesis:", 'speechSynthesis' in window);
+      console.log("Vibration:", 'vibrate' in navigator);
+    } catch (e) {
+      console.warn('Capability check failed', e);
+    }
+  }, []);
+
   return (
     <>
       <nav className="w-full bg-white px-4 py-3">
@@ -130,7 +142,7 @@ export default function IntegratedHomePage() {
             </div>
 
             <Link to="/login">
-              <button className="bg-green-400 text-black font-medium px-4 py-2 md:px-6 md:py-2.5 rounded-full hover:bg-green-500 transition-colors">
+              <button data-command="login" className="bg-green-400 text-black font-medium px-4 py-2 md:px-6 md:py-2.5 rounded-full hover:bg-green-500 transition-colors">
                 Login
               </button>
             </Link>
@@ -163,6 +175,9 @@ export default function IntegratedHomePage() {
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" /><path d="M16 9a5 5 0 0 1 0 6" /><path d="M19.364 18.364a9 9 0 0 0 0-12.728" /></svg>
               </button>
+              <div className="ml-2">
+                <VoiceAssistantButtonBasic />
+              </div>
             </div>
           </div>
         </div>
@@ -214,7 +229,7 @@ export default function IntegratedHomePage() {
 
               <div className="flex flex-col sm:flex-row gap-3 max-w-md">
                 <Link to="/register">
-                  <button className="h-12 px-6 bg-green-400 hover:bg-green-500 text-black font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+                  <button data-command="register" className="h-12 px-6 bg-green-400 hover:bg-green-500 text-black font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
                     Register to Vote
                   </button>
                 </Link>

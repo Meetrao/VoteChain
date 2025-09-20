@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FaceCaptureMulti from "./FaceCapture";
 import axios from "axios";
-import { ADMIN_WALLET } from "../constants";
+import { ADMIN_WALLET } from "../constants.JS";
 
 export default function Register() {
   const navigate = useNavigate();
