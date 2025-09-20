@@ -8,46 +8,11 @@ import Footer from "./Footer"
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import axios from "axios"
+import VoiceAssistantButtonBasic from "./VoiceAssistantButtonBasic"
+import VoiceAssistantOverlay from "./VoiceAssistantOverlay"
 
 
 export default function IntegratedHomePage() {
-
-  const [speakingLang, setSpeakingLang] = useState(null);
-
-  const speakPage = (lang) => {
-    if (window.speechSynthesis.speaking && speakingLang === lang) {
-      // 🔴 If already speaking in this language → stop it
-      window.speechSynthesis.cancel();
-      setSpeakingLang(null);
-      return;
-    }
-
-    // Stop any ongoing speech first
-    window.speechSynthesis.cancel();
-
-    // Collect all visible text
-    const textElements = document.querySelectorAll(
-      "h1, h2, h3, h4, h5, h6, p, span, li"
-    );
-    let fullText = "";
-    textElements.forEach((el) => (fullText += el.innerText + " "));
-    if (!fullText) return;
-
-    // Create speech utterance
-    const utterance = new SpeechSynthesisUtterance(fullText);
-    utterance.lang = lang;
-    utterance.rate = 1;
-    utterance.pitch = 1;
-
-    utterance.onend = () => setSpeakingLang(null); // reset when finished
-    window.speechSynthesis.speak(utterance);
-    setSpeakingLang(lang);
-  };
-
-
-
-
-
   const [fontSize, setFontSize] = useState(16); // default font size in px
 
   // Apply font size globally to <html>
@@ -89,9 +54,42 @@ export default function IntegratedHomePage() {
 
   const isRegistration = phase === "registration"
 
+  const [language, setLanguage] = useState("en-US");
+
+  const toggleReadAloud = () => {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    } else {
+      const textElements = document.querySelectorAll(
+        "h1, h2, h3, h4, h5, h6, p, span, li"
+      );
+      let fullText = "";
+      textElements.forEach((el) => (fullText += el.innerText + " "));
+      if (!fullText) return;
+
+      const utterance = new SpeechSynthesisUtterance(fullText);
+      utterance.lang = language;
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Log browser capabilities for debugging (SpeechRecognition, SpeechSynthesis, Vibration)
+  useEffect(() => {
+    try {
+      console.log("SpeechRecognition:", window.SpeechRecognition || window.webkitSpeechRecognition);
+      console.log("SpeechSynthesis:", 'speechSynthesis' in window);
+      console.log("Vibration:", 'vibrate' in navigator);
+    } catch (e) {
+      console.warn('Capability check failed', e);
+    }
+  }, []);
+
   return (
     <>
-      <nav  className="w-full bg-white px-4 py-3 ">
+      <nav className="w-full bg-white px-4 py-3">
         <div className="container mx-auto flex items-center justify-between">
           {/* Left Side - Logo and Branding */}
           <div className="flex items-center gap-4">
@@ -115,37 +113,37 @@ export default function IntegratedHomePage() {
           <div className="flex items-center gap-4 md:gap-6">
             {/* Language Toggle */}
             <div className="flex items-center gap-3 text-sm md:text-base">
-               <button
-      onClick={() => {
-        const select = document.querySelector(".goog-te-combo");
-        if (select) {
-          select.value = "en";
-          select.dispatchEvent(new Event("change"));
-        }
-      }}
-      className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
-    >
-      English
-    </button>
+              <button
+                onClick={() => {
+                  const select = document.querySelector(".goog-te-combo");
+                  if (select) {
+                    select.value = "en";
+                    select.dispatchEvent(new Event("change"));
+                  }
+                }}
+                className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+              >
+                English
+              </button>
 
-    <div className="w-px h-4 bg-gray-300"></div>
+              <div className="w-px h-4 bg-gray-300"></div>
 
-    <button
-      onClick={() => {
-        const select = document.querySelector(".goog-te-combo");
-        if (select) {
-          select.value = "hi";
-          select.dispatchEvent(new Event("change"));
-        }
-      }}
-      className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
-    >
-      हिंदी
-    </button>
+              <button
+                onClick={() => {
+                  const select = document.querySelector(".goog-te-combo");
+                  if (select) {
+                    select.value = "hi";
+                    select.dispatchEvent(new Event("change"));
+                  }
+                }}
+                className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+              >
+                हिंदी
+              </button>
             </div>
 
             <Link to="/login">
-              <button className="bg-green-400 text-black font-medium px-4 py-2 md:px-6 md:py-2.5 rounded-full hover:bg-green-500 transition-colors">
+              <button data-command="login" className="bg-green-400 text-black font-medium px-4 py-2 md:px-6 md:py-2.5 rounded-full hover:bg-green-500 transition-colors">
                 Login
               </button>
             </Link>
@@ -158,42 +156,30 @@ export default function IntegratedHomePage() {
               </Link>
             )}
 
-     <div className="flex items-center gap-2">
-        <button
-          onClick={decreaseFont}
-          className="px-3 py-2 border rounded-full hover:bg-gray-100"
-        >
-          A-
-        </button>
-        <button
-          onClick={increaseFont}
-          className="px-3 py-2 border rounded-full hover:bg-gray-100"
-        >
-          A+
-        </button>
-          {/* Read Aloud Controls */}
-      <div className=" flex items-center gap-3">
-               {/* English Button */}
-      <button
-        onClick={() => speakPage("en-US")}
-        className={`px-4 py-2 rounded-full text-white ${
-          speakingLang === "en-US" ? "bg-black" : "bg-black"
-        }`}
-      >
-        {speakingLang === "en-US" ? "Stop English" : "Read in English"}
-      </button>
-
-      {/* Hindi Button */}
-      <button
-        onClick={() => speakPage("hi-IN")}
-        className={`px-4 py-2 rounded-full text-white ${
-          speakingLang === "hi-IN" ? "bg-black" : "bg-green-500"
-        }`}
-      >
-        {speakingLang === "hi-IN" ? "रोकें" : "हिंदी में पढ़ें"}
-      </button>
-      </div>
-        </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={decreaseFont}
+                className="px-3 py-2 border rounded-full hover:bg-gray-100"
+              >
+                A-
+              </button>
+              <button
+                onClick={increaseFont}
+                className="px-3 py-2 border rounded-full hover:bg-gray-100"
+              >
+                A+
+              </button>
+              <button
+                onClick={toggleReadAloud}
+                className="px-4 py-2 bg-white border text-black rounded-full hover:bg-slate-50"
+                title="Read Aloud"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" /><path d="M16 9a5 5 0 0 1 0 6" /><path d="M19.364 18.364a9 9 0 0 0 0-12.728" /></svg>
+              </button>
+              <div className="ml-2">
+                <VoiceAssistantButtonBasic />
+              </div>
+            </div>
           </div>
         </div>
       </nav>
@@ -244,7 +230,7 @@ export default function IntegratedHomePage() {
 
               <div className="flex flex-col sm:flex-row gap-3 max-w-md">
                 <Link to="/register">
-                  <button className="h-12 px-6 bg-green-400 hover:bg-green-500 text-black font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+                  <button data-command="register" className="h-12 px-6 bg-green-400 hover:bg-green-500 text-black font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
                     Register to Vote
                   </button>
                 </Link>
@@ -293,12 +279,13 @@ export default function IntegratedHomePage() {
           </div>
         </div>
       </main>
-    <Fourgrid/>
-    <Steps/>
-    <Video/>
-    <Slider/>
-    <Faq/>
-    <Footer/>
+      <Fourgrid />
+      <VoiceAssistantOverlay />
+      <Steps />
+      <Video />
+      <Slider />
+      <Faq />
+      <Footer />
     </>
   )
 }

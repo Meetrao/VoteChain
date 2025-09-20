@@ -10,11 +10,9 @@ const WebioInterface = () => {
           <div className="flex items-center space-x-4">
             <div className="flex flex-col">
               <h1 className="text-6xl font-bold text-black text-center">
-                Engagement & Nurture Marketing Strategy
+                Basic Tutorial on Voting Process Using Blockchain
               </h1>
-              <p className="text-base pt-4 text-slate-500">
-                Social Media Marketing
-              </p>
+             
             </div>
           </div>
         </div>
