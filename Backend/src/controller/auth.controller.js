@@ -3,7 +3,6 @@ import User from "../model/user.model.js";
 import { sendOTP, verifyOTP } from "../utils/otpUtils.js";
 import jwtUtil from "../utils/jwt.js";
 import { euclideanDistance } from "../utils/face-api.js";
-import blockchain from "../utils/blockchain.js";
 
 import { NODE_ENV } from "../constants.js";
 import { THRESHOLD } from "../constants.js";
