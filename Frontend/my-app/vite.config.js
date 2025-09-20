@@ -4,5 +4,9 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // No dev proxy: frontend calls Render API directly in production deployments
+  server: {
+    proxy: {
+      '/api': 'http://localhost:5000',
+    },
+  },
 })

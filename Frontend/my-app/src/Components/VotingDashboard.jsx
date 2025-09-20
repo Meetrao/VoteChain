@@ -110,7 +110,7 @@ export default function VotingDashboard() {
 
   const handleDebugUser = async () => {
     try {
-      const response = await axios.get("https://votechain-api.onrender.com/api/voting/debug-user", {
+      const response = await axios.get("http://localhost:5000/api/voting/debug-user", {
         withCredentials: true
       });
       console.log("User debug data:", response.data);

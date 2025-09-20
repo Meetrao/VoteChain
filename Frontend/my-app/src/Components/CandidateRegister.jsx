@@ -82,7 +82,7 @@ export default function CandidateRegister() {
       formDataToSend.append("candidateWalletAddress", walletAddress);
       formDataToSend.append("logo", logo);
 
-  const response = await fetch("https://votechain-api.onrender.com/api/candidate/register", {
+      const response = await fetch("http://localhost:5000/api/candidate/register", {
         method: "POST",
         body: formDataToSend,
         credentials: "include",

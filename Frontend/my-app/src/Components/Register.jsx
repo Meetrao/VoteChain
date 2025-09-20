@@ -74,7 +74,7 @@ export default function Register() {
     }
     try {
       setVerifyingVoter(true);
-      const res = await axios.post("https://votechain-api.onrender.com/api/mock/voter", {
+      const res = await axios.post("http://localhost:5000/api/mock/verify-voter", {
         voterId: form.voter_id.trim(),
       });
       if (res.data?.status === "VALID") {
@@ -108,7 +108,7 @@ export default function Register() {
     setResult(null);
 
     try {
-      const res = await axios.post("https://votechain-api.onrender.com/api/auth/register", {
+      const res = await axios.post("http://localhost:5000/api/auth/register", {
         ...form,
         face_embedding: faceEmbedding,
       });
