@@ -34,7 +34,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({ totalUsers: 0, voterCount: 0 })
 
-  const API = "http://localhost:5000/api"
+  const API = "https://votechain-api.onrender.com/api"
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })

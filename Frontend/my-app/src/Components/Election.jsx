@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Clipboard, Wallet, Vote } from 'lucide-react';
 import axios from 'axios';
 
-const API = "http://localhost:5000/api";
+const API = "https://votechain-api.onrender.com/api";
 
 const Election = ({ getPhaseColor, renderPhaseButton }) => {
   const [elections, setElections] = useState([]);
