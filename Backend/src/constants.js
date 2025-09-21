@@ -18,4 +18,6 @@ export const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL
 export const SEPOLIA_PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY
 export const VITE_VOTING_CONTRACT_ADDRESS = process.env.VITE_VOTING_CONTRACT_ADDRESS
 export const ADMIN_WALLET = process.env.ADMIN_WALLET
-export const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+// Support multiple origins via comma-separated env variable. Defaults include local dev and Vercel frontend.
+const defaultOrigins = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "https://vote-chain-ochre.vercel.app"];
+export const CORS_ORIGIN = (process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",").map(s => s.trim()) : defaultOrigins);
