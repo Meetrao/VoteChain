@@ -11,6 +11,20 @@ import { CORS_ORIGIN } from "./constants.js";
 import './utils/cronJobs.js';
 
 const app = express();
+// Temporary permissive CORS middleware (reflect origin and handle preflight)
+// This ensures responses always include Access-Control-Allow-Origin for testing.
+app.use((req, res, next) => {
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  // short-circuit preflight
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 
 // CORS configuration: permissive mode can be enabled with ENABLE_PERMISSIVE_CORS=true
