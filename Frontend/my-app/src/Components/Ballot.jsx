@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { API_URL } from "../constants.JS";
-const BACKEND_URL = API_URL ? `${API_URL}` : import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+// Use relative /api endpoints; main.jsx config will set axios baseURL to include /api if VITE_API_URL is set
 
 export default function Ballot() {
   const navigate = useNavigate();
@@ -24,8 +23,8 @@ export default function Ballot() {
     try {
       setLoading(true);
       const [phaseRes, candRes] = await Promise.all([
-        fetch(`${BACKEND_URL}/api/voting/phase`),
-        fetch(`${BACKEND_URL}/api/voting/candidates`),
+        fetch(`/voting/phase`),
+        fetch(`/voting/candidates`),
       ]);
       const phaseData = await phaseRes.json();
       const candData = await candRes.json();
@@ -42,7 +41,7 @@ export default function Ballot() {
   const castVote = async (candidateWalletAddress) => {
     try {
       setMessage("Casting vote...");
-      const res = await fetch(`${BACKEND_URL}/api/voting/vote`, {
+      const res = await fetch(`/voting/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -14,7 +14,7 @@ export function MemberAdminDashboard() {
   useEffect(() => {
     const fetchVoters = async () => {
       try {
-        const response = await axios.get(`${API_URL}/voting/voters`);
+        const response = await axios.get('/voting/voters');
         setVoters(response.data.voters || response.data || []);
       } catch (err) {
         setError("Failed to fetch voters");

@@ -10,7 +10,8 @@ axios.defaults.withCredentials = true;
 if (API_URL) {
   // If API_URL ends with /api or with a trailing slash, normalize
   const base = API_URL.replace(/\/$/, '');
-  axios.defaults.baseURL = base;
+  // If user set VITE_API_URL to root (e.g. https://example.com/), use /api
+  axios.defaults.baseURL = base.endsWith('/api') ? base : `${base}/api`;
 } else {
   axios.defaults.baseURL = '/api';
 }

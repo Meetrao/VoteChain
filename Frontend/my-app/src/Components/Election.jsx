@@ -4,7 +4,6 @@ import { Clipboard, Wallet, Vote } from 'lucide-react';
 import axios from 'axios';
 
 import { API_URL } from "../constants.JS";
-const API = API_URL ? `${API_URL.replace(/\/$/, '')}/api` : "http://localhost:5000/api";
 
 const Election = ({ getPhaseColor, renderPhaseButton }) => {
   const [elections, setElections] = useState([]);
@@ -21,7 +20,7 @@ const Election = ({ getPhaseColor, renderPhaseButton }) => {
   useEffect(() => {
     const fetchElections = async () => {
       try {
-        const res = await axios.get(`${API}/voting/all`);
+        const res = await axios.get('/voting/all');
         setElections(res.data?.elections || []);
       } catch (error) {
         setElections([]);
@@ -110,8 +109,8 @@ const Election = ({ getPhaseColor, renderPhaseButton }) => {
                           <div className="col-span-2 flex items-center">
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${election.phase === "ended" || election.phase === "result"
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : "bg-gray-100 text-gray-600"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-gray-100 text-gray-600"
                                 } ${getPhaseColor ? getPhaseColor(election.phase) : ""}`}
                             >
                               {election.phase.toUpperCase()}

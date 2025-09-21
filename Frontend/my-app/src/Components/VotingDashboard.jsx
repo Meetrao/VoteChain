@@ -111,7 +111,7 @@ export default function VotingDashboard() {
 
   const handleDebugUser = async () => {
     try {
-      const response = await axios.get(`${API_URL}/voting/debug-user`, {
+      const response = await axios.get('/voting/debug-user', {
         withCredentials: true
       });
       console.log("User debug data:", response.data);

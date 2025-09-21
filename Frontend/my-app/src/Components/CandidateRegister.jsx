@@ -83,7 +83,7 @@ export default function CandidateRegister() {
       formDataToSend.append("candidateWalletAddress", walletAddress);
       formDataToSend.append("logo", logo);
 
-      const response = await fetch(`${API_URL}/candidate/register`, {
+      const response = await fetch(`/candidate/register`, {
         method: "POST",
         body: formDataToSend,
         credentials: "include",

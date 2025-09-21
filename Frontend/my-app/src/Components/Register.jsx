@@ -75,7 +75,7 @@ export default function Register() {
     }
     try {
       setVerifyingVoter(true);
-      const res = await axios.post(`${API_URL}/mock/verify-voter`, {
+      const res = await axios.post('/mock/verify-voter', {
         voterId: form.voter_id.trim(),
       });
       if (res.data?.status === "VALID") {
@@ -109,7 +109,7 @@ export default function Register() {
     setResult(null);
 
     try {
-      const res = await axios.post(`${API_URL}/auth/register`, {
+      const res = await axios.post('/auth/register', {
         ...form,
         face_embedding: faceEmbedding,
       });
