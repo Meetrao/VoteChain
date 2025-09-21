@@ -12,39 +12,9 @@ import './utils/cronJobs.js';
 
 const app = express();
 
-// Middleware
-// Configure CORS to allow only whitelisted origins (supports array)
+
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    const allowed = Array.isArray(CORS_ORIGIN) ? CORS_ORIGIN : [CORS_ORIGIN];
-    // Normalize origin (remove trailing slash)
-    const normalize = (u) => (typeof u === 'string' ? u.replace(/\/$/, '') : u);
-    const normOrigin = normalize(origin);
-
-    // Direct match
-    if (allowed.map(normalize).includes(normOrigin)) return callback(null, true);
-
-    // Allow simple hostname match (ignore protocol)
-    try {
-      const url = new URL(normOrigin);
-      const originHost = url.host;
-      for (const a of allowed) {
-        if (!a) continue;
-        const allowedHost = normalize(a).replace(/^https?:\/\//, '');
-        if (allowedHost === originHost || allowedHost === originHost.replace(/^www\./, '') || (`www.${allowedHost}` === originHost)) {
-          return callback(null, true);
-        }
-      }
-    } catch (e) {
-      // ignore URL parse errors
-    }
-
-    // Not allowed — don't throw, just deny and let CORS middleware proceed (no header)
-    console.warn('CORS: rejecting origin:', origin);
-    return callback(null, false);
-  },
+  origin: true, // reflect request origin
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
