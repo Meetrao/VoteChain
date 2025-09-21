@@ -13,11 +13,48 @@ import './utils/cronJobs.js';
 const app = express();
 
 
-app.use(cors({
-  origin: true, // reflect request origin
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-}));
+// CORS configuration: permissive mode can be enabled with ENABLE_PERMISSIVE_CORS=true
+const ENABLE_PERMISSIVE_CORS = process.env.ENABLE_PERMISSIVE_CORS === 'true';
+
+if (ENABLE_PERMISSIVE_CORS) {
+  console.warn('CORS: permissive mode enabled — allowing all origins (for testing only)');
+  app.use(cors({ origin: true, credentials: true, methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"] }));
+} else {
+  // Use explicit allowlist from CORS_ORIGIN
+  app.use(cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (curl, server-to-server)
+      if (!origin) return callback(null, true);
+
+      const allowed = Array.isArray(CORS_ORIGIN) ? CORS_ORIGIN : [CORS_ORIGIN];
+      const normalize = (u) => (typeof u === 'string' ? u.replace(/\/$/, '') : u);
+      const normOrigin = normalize(origin);
+
+      // Direct match
+      if (allowed.map(normalize).includes(normOrigin)) return callback(null, true);
+
+      // Try hostname match (ignore protocol)
+      try {
+        const url = new URL(normOrigin);
+        const originHost = url.host;
+        for (const a of allowed) {
+          if (!a) continue;
+          const allowedHost = normalize(a).replace(/^https?:\/\//, '');
+          if (allowedHost === originHost || allowedHost === originHost.replace(/^www\./, '') || (`www.${allowedHost}` === originHost)) {
+            return callback(null, true);
+          }
+        }
+      } catch (e) {
+        // ignore URL parse errors
+      }
+
+      console.warn('CORS: rejecting origin:', origin);
+      return callback(null, false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+  }));
+}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
