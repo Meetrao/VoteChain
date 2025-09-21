@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../constants.JS";
 import { Link } from 'react-router-dom';
 import { Clipboard, Wallet, Vote } from 'lucide-react';
 
@@ -13,7 +14,7 @@ export function MemberAdminDashboard() {
   useEffect(() => {
     const fetchVoters = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/voting/voters");
+        const response = await axios.get(`${API_URL}/voting/voters`);
         setVoters(response.data.voters || response.data || []);
       } catch (err) {
         setError("Failed to fetch voters");

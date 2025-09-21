@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../constants.JS";
 
 export default function CandidateRegister() {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ export default function CandidateRegister() {
       formDataToSend.append("candidateWalletAddress", walletAddress);
       formDataToSend.append("logo", logo);
 
-      const response = await fetch("http://localhost:5000/api/candidate/register", {
+      const response = await fetch(`${API_URL}/candidate/register`, {
         method: "POST",
         body: formDataToSend,
         credentials: "include",
@@ -136,8 +137,8 @@ export default function CandidateRegister() {
             {message && (
               <div
                 className={`mb-4 p-3 rounded-lg text-sm text-center border ${message.includes("✅")
-                    ? "bg-green-100 text-green-700 border-green-200"
-                    : "bg-red-100 text-red-700 border-red-200"
+                  ? "bg-green-100 text-green-700 border-green-200"
+                  : "bg-red-100 text-red-700 border-red-200"
                   }`}
               >
                 {message}

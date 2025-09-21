@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../constants.JS";
 import { useNavigate } from "react-router-dom";
 
 axios.defaults.withCredentials = true;
@@ -110,7 +111,7 @@ export default function VotingDashboard() {
 
   const handleDebugUser = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/voting/debug-user", {
+      const response = await axios.get(`${API_URL}/voting/debug-user`, {
         withCredentials: true
       });
       console.log("User debug data:", response.data);
@@ -157,9 +158,8 @@ export default function VotingDashboard() {
                 return (
                   <div
                     key={candidate.candidateWalletAddress || candidate._id}
-                    className={`relative rounded-2xl border p-4 md:p-6 bg-white shadow-sm flex flex-col md:flex-row items-center gap-4 md:gap-6 ${
-                      isWinner ? "border-yellow-300 ring-1 ring-yellow-200" : "border-gray-200"
-                    }`}
+                    className={`relative rounded-2xl border p-4 md:p-6 bg-white shadow-sm flex flex-col md:flex-row items-center gap-4 md:gap-6 ${isWinner ? "border-yellow-300 ring-1 ring-yellow-200" : "border-gray-200"
+                      }`}
                   >
                     {/* Winner badge */}
                     {isWinner && (
@@ -170,9 +170,8 @@ export default function VotingDashboard() {
 
                     {/* Position */}
                     <div
-                      className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-lg md:text-xl font-bold flex-shrink-0 ${
-                        isWinner ? "bg-yellow-300 text-gray-900" : "bg-gray-100 text-gray-600"
-                      }`}
+                      className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-lg md:text-xl font-bold flex-shrink-0 ${isWinner ? "bg-yellow-300 text-gray-900" : "bg-gray-100 text-gray-600"
+                        }`}
                     >
                       #{index + 1}
                     </div>
@@ -182,9 +181,8 @@ export default function VotingDashboard() {
                       <img
                         src={candidate.logo}
                         alt={`${candidate.name} logo`}
-                        className={`w-16 h-16 md:w-20 md:h-20 rounded-full object-cover flex-shrink-0 ${
-                          isWinner ? "ring-2 ring-yellow-300" : "ring-1 ring-gray-200"
-                        }`}
+                        className={`w-16 h-16 md:w-20 md:h-20 rounded-full object-cover flex-shrink-0 ${isWinner ? "ring-2 ring-yellow-300" : "ring-1 ring-gray-200"
+                          }`}
                       />
                     )}
 
@@ -300,50 +298,72 @@ export default function VotingDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 py-10">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Logout */}
-        <button
-          onClick={handleLogout}
-          className="absolute top-4 right-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full text-sm font-medium shadow-sm transition-colors"
-        >
-          Logout
-        </button>
+        <div className="flex items-center justify-end mb-6">
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-semibold shadow-md transition-colors"
+          >
+            Logout
+          </button>
+        </div>
 
-        <h2 className="text-2xl md:text-3xl font-montserrat font-semibold text-gray-900 mb-4">
-          {election?.phase === "result" ? "🏆 Election Results" : "Voting Dashboard"}
-        </h2>
+        <div className="mb-6">
+          <h2 className="text-2xl md:text-4xl lg:text-5xl font-montserrat font-extrabold text-gray-900">
+            {election?.phase === "result" ? "🏆 Election Results" : "Voting Dashboard"}
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">Overview and actions for the current election.</p>
+        </div>
 
         {votingMessage && (
           <div
-            className={`mb-4 rounded-2xl px-4 py-3 border ${
-              votingMessage.includes("✅")
-                ? "bg-green-50 border-green-200 text-green-800"
-                : "bg-red-50 border-red-200 text-red-800"
-            }`}
+            className={`mb-6 rounded-2xl px-5 py-3 border shadow-sm ${votingMessage.includes("✅")
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : "bg-red-50 border-red-200 text-red-800"
+              }`}
           >
             {votingMessage}
           </div>
         )}
 
         {loading ? (
-          <div className="flex items-center gap-2 text-gray-600">
-            <span className="inline-block h-4 w-4 rounded-full border-2 border-gray-300 border-t-gray-600 animate-spin" />
-            Loading...
+          <div className="flex items-center gap-3 text-gray-600 justify-center py-20">
+            <svg className="animate-spin h-8 w-8 text-gray-400" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            <span className="text-lg">Loading election data...</span>
           </div>
         ) : message ? (
-          <p className="text-gray-600">{message}</p>
+          <div className="bg-white rounded-2xl p-10 text-center shadow-md">
+            <p className="text-gray-600 text-2xl">{message}</p>
+          </div>
         ) : election ? (
-          election.phase === "result" ? renderResults() : renderVoting()
-        ) : null}
+          <div className="grid grid-cols-1 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>{election.phase === "result" ? renderResults() : renderVoting()}</div>
+              <aside className="hidden lg:block">
+                <div className="sticky top-20 space-y-4">
+                  <div className="bg-white p-4 rounded-2xl shadow-md border">
+                    <h4 className="text-sm text-gray-500">Election</h4>
+                    <div className="text-lg font-semibold text-gray-900">{election.title}</div>
+                    <div className="mt-2 text-xs text-gray-500">Phase: <span className="font-semibold text-emerald-600">{election.phase}</span></div>
+                  </div>
 
-        {/* Debug button */}
-        <button
-          onClick={handleDebugUser}
-          className="mt-6 px-4 py-2 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-        >
-          Debug User Data
-        </button>
+                  <div className="bg-white p-4 rounded-2xl shadow-md border">
+                    <h4 className="text-sm text-gray-500">Quick Actions</h4>
+                    <div className="mt-3 flex flex-col gap-2">
+                      <button onClick={handleDebugUser} className="text-sm px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Debug User</button>
+                      <button className="text-sm px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">View Voter List</button>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

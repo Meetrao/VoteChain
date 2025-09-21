@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+import { API_URL } from "../constants.JS";
+const BACKEND_URL = API_URL ? `${API_URL}` : import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 export default function Ballot() {
   const navigate = useNavigate();

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FaceCaptureMulti from "./FaceCapture";
 import axios from "axios";
+import { API_URL } from "../constants.JS";
 import { ADMIN_WALLET } from "../constants.JS";
 import VoiceAssistantButtonBasic from "./VoiceAssistantButtonBasic";
 // ...existing imports
@@ -74,7 +75,7 @@ export default function Register() {
     }
     try {
       setVerifyingVoter(true);
-      const res = await axios.post("http://localhost:5000/api/mock/verify-voter", {
+      const res = await axios.post(`${API_URL}/mock/verify-voter`, {
         voterId: form.voter_id.trim(),
       });
       if (res.data?.status === "VALID") {
@@ -108,7 +109,7 @@ export default function Register() {
     setResult(null);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", {
+      const res = await axios.post(`${API_URL}/auth/register`, {
         ...form,
         face_embedding: faceEmbedding,
       });
@@ -183,6 +184,39 @@ export default function Register() {
                 </button>
               </div>
 
+
+
+              {/* UPDATED: voter ID + verify button + message */}
+              <div>
+                <div className="flex items-center gap-2">
+                  <input
+                    name="voter_id"
+                    type="text"
+                    placeholder="Voter ID"
+                    value={form.voter_id}
+                    onChange={handleChange}
+                    required
+                    className="flex-1 border border-gray-300 focus:border-[#8B5CF6] focus:ring-0 focus:outline-none px-3 py-2 rounded-full"
+                  />
+                  <button
+                    type="button"
+                    data-command="verify voter"
+                    onClick={handleVerifyVoterId}
+                    disabled={verifyingVoter}
+                    className="px-4 py-2 rounded-full bg-black hover:bg-gray-900 text-white font-medium disabled:opacity-60"
+                  >
+                    {verifyingVoter ? "Checking..." : "Verify"}
+                  </button>
+                </div>
+                {voterVerifyMsg && (
+                  <div
+                    className={`mt-2 inline-block px-3 py-2 rounded-full text-sm ${isVoterValid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      }`}
+                  >
+                    {voterVerifyMsg}
+                  </div>
+                )}
+              </div>
               <div>
                 <input
                   name="name"
@@ -220,37 +254,7 @@ export default function Register() {
                 />
               </div>
 
-              {/* UPDATED: voter ID + verify button + message */}
-              <div>
-                <div className="flex items-center gap-2">
-                  <input
-                    name="voter_id"
-                    type="text"
-                    placeholder="Voter ID"
-                    value={form.voter_id}
-                    onChange={handleChange}
-                    required
-                    className="flex-1 border border-gray-300 focus:border-[#8B5CF6] focus:ring-0 focus:outline-none px-3 py-2 rounded-full"
-                  />
-                  <button
-                    type="button"
-                    data-command="verify voter"
-                    onClick={handleVerifyVoterId}
-                    disabled={verifyingVoter}
-                    className="px-4 py-2 rounded-full bg-black hover:bg-gray-900 text-white font-medium disabled:opacity-60"
-                  >
-                    {verifyingVoter ? "Checking..." : "Verify"}
-                  </button>
-                </div>
-                {voterVerifyMsg && (
-                  <div
-                    className={`mt-2 inline-block px-3 py-2 rounded-full text-sm ${isVoterValid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                      }`}
-                  >
-                    {voterVerifyMsg}
-                  </div>
-                )}
-              </div>
+
 
               <div>
                 <input
