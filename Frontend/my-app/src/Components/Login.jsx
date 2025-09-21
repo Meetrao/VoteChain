@@ -6,7 +6,6 @@ import axios from "axios";
 import { ADMIN_WALLET } from "../constants.JS";
 import { Loader2, User, Lock, Camera } from "lucide-react";
 
-axios.defaults.baseURL = "/api";
 axios.defaults.withCredentials = true;
 
 export default function Login() {

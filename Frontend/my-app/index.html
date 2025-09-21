@@ -1,39 +1,40 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-    <div id="google_translate_element"></div>
 
-<script type="text/javascript">
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement(
-      { pageLanguage: "en", includedLanguages: "en,hi" },
-      "google_translate_element"
-    );
-  }
-</script>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite + React</title>
+</head>
 
-<script
-  type="text/javascript"
-  src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-></script>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+  <div id="google_translate_element"></div>
 
-<style>
-  /* Hide the default Google Translate dropdown */
-  #google_translate_element {
-    display: none;
-  }
-</style>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement(
+        { pageLanguage: "en", includedLanguages: "en,hi" },
+        "google_translate_element"
+      );
+    }
+  </script>
+
+  <script type="text/javascript"
+    src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <style>
+    /* Hide the default Google Translate dropdown */
+    #google_translate_element {
+      display: none;
+    }
+  </style>
 
 
-    <script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
       // Get current font size of <html>
       let html = document.documentElement;
       let currentFontSize = parseInt(window.getComputedStyle(html).fontSize);
@@ -41,18 +42,20 @@
       const increaseBtn = document.getElementById("increaseFont");
       const decreaseBtn = document.getElementById("decreaseFont");
 
-      increaseBtn.addEventListener("click", () => {
+      if (increaseBtn) increaseBtn.addEventListener("click", () => {
         currentFontSize += 2;
         html.style.fontSize = currentFontSize + "px";
       });
 
-      decreaseBtn.addEventListener("click", () => {
+      if (decreaseBtn) decreaseBtn.addEventListener("click", () => {
         if (currentFontSize > 10) {
           currentFontSize -= 2;
           html.style.fontSize = currentFontSize + "px";
         }
       });
-    </script>
+    });
+  </script>
 
-  </body>
+</body>
+
 </html>
